@@ -1,31 +1,27 @@
+import 'package:board_test/sketcher_data.dart';
 import 'package:flutter/material.dart';
 
-import 'main.dart';
-
-class Sketcher1 extends LeafRenderObjectWidget {
+class SelectedSketcher extends LeafRenderObjectWidget {
   final Set<RRect> rects;
   final Color color;
 
-  const Sketcher1({
+  const SelectedSketcher({
     super.key,
     required this.rects,
     this.color = Colors.black,
   });
 
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      RenderSketcher1(rects, color);
+  RenderObject createRenderObject(BuildContext context) => RenderSelectedSketcher(rects, color);
 
   @override
-  void updateRenderObject(
-          BuildContext context, covariant RenderSketcher1 renderObject) =>
-      renderObject
-        ..rects = rects
-        ..color = color;
+  void updateRenderObject(BuildContext context, covariant RenderSelectedSketcher renderObject) => renderObject
+    ..rects = rects
+    ..color = color;
 }
 
-class RenderSketcher1 extends RenderBox {
-  RenderSketcher1(this._rects, Color color)
+class RenderSelectedSketcher extends RenderBox {
+  RenderSelectedSketcher(this._rects, Color color)
       : pen = Paint()
           ..color = color
           ..style = PaintingStyle.stroke
@@ -52,5 +48,5 @@ class RenderSketcher1 extends RenderBox {
   }
 
   @override
-  void performLayout() => size = A.a;
+  void performLayout() => size = SketcherData.size;
 }
