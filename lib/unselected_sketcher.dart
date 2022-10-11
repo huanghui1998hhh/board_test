@@ -106,5 +106,8 @@ class RenderUnselectedSketcher extends RenderBox {
   void performLayout() => size = SketcherData.size;
 
   @override
-  bool hitTestSelf(Offset position) => true;
+  bool hitTestSelf(Offset position) {
+    print(position);
+    return true;
+  }
 }

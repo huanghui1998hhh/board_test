@@ -19,7 +19,7 @@ class _SketcherState extends State<Sketcher> {
   Set<RRect> rects = {
     RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 200, 200), const Radius.circular(20)),
     RRect.fromRectAndRadius(const Rect.fromLTWH(200, 200, 200, 200), const Radius.circular(60)),
-    RRect.fromRectAndRadius(const Rect.fromLTWH(400, 400, 200, 200), const Radius.circular(80)),
+    RRect.fromRectAndRadius(const Rect.fromLTWH(400, 400, 800, 200), const Radius.circular(80)),
   };
 
   Set<RRect> selectedTemp = {};
@@ -41,27 +41,34 @@ class _SketcherState extends State<Sketcher> {
             alignment: Alignment.topLeft,
             child: Transform.translate(
               offset: dragOffset,
-              child: Transform.scale(
-                scale: scale,
-                alignment: Alignment.topLeft,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      height: SketcherData.size.height,
-                      width: SketcherData.size.width,
-                      color: Colors.white,
+              child: SizedBox(
+                height: SketcherData.size.height * scale,
+                width: SketcherData.size.width * scale,
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Transform.scale(
+                    scale: scale,
+                    alignment: Alignment.topLeft,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: SketcherData.size.height,
+                          width: SketcherData.size.width,
+                          color: Colors.white,
+                        ),
+                        UnselectedSketcher(
+                          rects: rects,
+                          onSelected: _onBlockSelected,
+                          onDraggedBoard: (e) => _boardDragHandle(constraints, e),
+                        ),
+                        SelectedSketcher(
+                          rects: selectedTemp,
+                          color: Colors.red,
+                        ),
+                      ],
                     ),
-                    UnselectedSketcher(
-                      rects: rects,
-                      onSelected: _onBlockSelected,
-                      onDraggedBoard: (e) => _boardDragHandle(constraints, e),
-                    ),
-                    SelectedSketcher(
-                      rects: selectedTemp,
-                      color: Colors.red,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
