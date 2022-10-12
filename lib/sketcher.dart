@@ -39,24 +39,20 @@ class _SketcherState extends State<Sketcher> {
           backgroundColor: Colors.grey,
           body: UnconstrainedBox(
             alignment: Alignment.topLeft,
-            child: Transform.translate(
-              offset: dragOffset,
-              child: SizedBox(
-                height: SketcherData.size.height * scale,
-                width: SketcherData.size.width * scale,
-                child: Align(
-                  alignment: Alignment.topLeft,
+            child: Stack(
+              children: [
+                Container(
+                  height: SketcherData.size.height * scale,
+                  width: SketcherData.size.width * scale,
+                  color: Colors.white,
+                ),
+                Transform.translate(
+                  offset: dragOffset,
                   child: Transform.scale(
                     scale: scale,
                     alignment: Alignment.topLeft,
                     child: Stack(
-                      alignment: Alignment.center,
                       children: [
-                        Container(
-                          height: SketcherData.size.height,
-                          width: SketcherData.size.width,
-                          color: Colors.white,
-                        ),
                         UnselectedSketcher(
                           rects: rects,
                           onSelected: _onBlockSelected,
@@ -69,8 +65,8 @@ class _SketcherState extends State<Sketcher> {
                       ],
                     ),
                   ),
-                ),
-              ),
+                )
+              ],
             ),
           ),
           floatingActionButton: ButtonBar(

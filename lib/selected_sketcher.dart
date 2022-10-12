@@ -48,5 +48,8 @@ class RenderSelectedSketcher extends RenderBox {
   }
 
   @override
+  bool get sizedByParent => false;
+
+  @override
   void performLayout() => size = SketcherData.size;
 }
