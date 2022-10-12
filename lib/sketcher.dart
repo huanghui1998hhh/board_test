@@ -37,36 +37,39 @@ class _SketcherState extends State<Sketcher> {
         },
         child: Scaffold(
           backgroundColor: Colors.grey,
-          body: UnconstrainedBox(
-            alignment: Alignment.topLeft,
-            child: Stack(
-              children: [
-                Container(
-                  height: SketcherData.size.height * scale,
-                  width: SketcherData.size.width * scale,
-                  color: Colors.white,
-                ),
-                Transform.translate(
-                  offset: dragOffset,
-                  child: Transform.scale(
-                    scale: scale,
-                    alignment: Alignment.topLeft,
-                    child: Stack(
-                      children: [
-                        UnselectedSketcher(
-                          rects: rects,
-                          onSelected: _onBlockSelected,
-                          onDraggedBoard: (e) => _boardDragHandle(constraints, e),
-                        ),
-                        SelectedSketcher(
-                          rects: selectedTemp,
-                          color: Colors.red,
-                        ),
-                      ],
+          body: Center(
+            child: UnconstrainedBox(
+              alignment: Alignment.center,
+              child: Transform.translate(
+                offset: dragOffset,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      height: SketcherData.size.height * scale,
+                      width: SketcherData.size.width * scale,
+                      color: Colors.white,
                     ),
-                  ),
-                )
-              ],
+                    Transform.scale(
+                      scale: scale,
+                      alignment: Alignment.center,
+                      child: Stack(
+                        children: [
+                          UnselectedSketcher(
+                            rects: rects,
+                            onSelected: _onBlockSelected,
+                            onDraggedBoard: (e) => _boardDragHandle(constraints, e),
+                          ),
+                          SelectedSketcher(
+                            rects: selectedTemp,
+                            color: Colors.red,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           floatingActionButton: ButtonBar(
@@ -106,13 +109,15 @@ class _SketcherState extends State<Sketcher> {
     var targetY = dragOffset.dy;
     if (constraints.maxHeight < SketcherData.size.height * scale) {
       final target = dragOffset.dy + dragDelta.dy;
-      if (target < 0 && target > (constraints.maxHeight - SketcherData.size.height * scale)) {
+      final edge = (SketcherData.size.height * scale - constraints.maxHeight) / 2;
+      if (target < edge && target > -edge) {
         targetY = target;
       }
     }
     if (constraints.maxWidth < SketcherData.size.width * scale) {
       final target = dragOffset.dx + dragDelta.dx;
-      if (target < 0 && target > (constraints.maxWidth - SketcherData.size.width * scale)) {
+      final edge = (SketcherData.size.width * scale - constraints.maxWidth) / 2;
+      if (target < edge && target > -edge) {
         targetX = target;
       }
     }
@@ -125,9 +130,11 @@ class _SketcherState extends State<Sketcher> {
   }
 
   void _addScale() {
-    if (_scale < 500) {
+    if (_scale < 300) {
       setState(() {
+        final normalScaleDragOffset = dragOffset / scale;
         _scale += 20;
+        dragOffset = normalScaleDragOffset * scale;
       });
     }
   }
@@ -135,13 +142,17 @@ class _SketcherState extends State<Sketcher> {
   void _reduceScale(BoxConstraints constraints) {
     if (_scale > 20) {
       setState(() {
+        var dx = dragOffset.dx;
+        var dy = dragOffset.dy;
+        if (constraints.maxWidth < SketcherData.size.width * scale) {
+          dx = 0;
+        }
+        if (constraints.maxHeight < SketcherData.size.height * scale) {
+          dy = 0;
+        }
+        final normalScaleDragOffset = Offset(dx, dy) / scale;
         _scale -= 20;
-        if (constraints.maxHeight > SketcherData.size.height * scale) {
-          dragOffset = Offset(dragOffset.dx, 0);
-        }
-        if (constraints.maxWidth > SketcherData.size.width * scale) {
-          dragOffset = Offset(0, dragOffset.dy);
-        }
+        dragOffset = normalScaleDragOffset * scale;
       });
     }
   }
