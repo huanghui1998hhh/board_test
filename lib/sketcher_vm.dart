@@ -1,5 +1,6 @@
 import 'package:board_test/sketcher_data.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
 class SketcherVM extends ChangeNotifier {
@@ -36,26 +37,10 @@ class SketcherVM extends ChangeNotifier {
   }
 
   void boardDragHandle(BoxConstraints constraints, Offset dragDelta) {
-    var targetX = dragOffset.dx;
-    var targetY = dragOffset.dy;
-    if (constraints.maxHeight < SketcherData.size.height * scale) {
-      final target = dragOffset.dy + dragDelta.dy;
-      final edge = (SketcherData.size.height * scale - constraints.maxHeight) / 2;
-      if (target < edge && target > -edge) {
-        targetY = target;
-      }
-    }
-    if (constraints.maxWidth < SketcherData.size.width * scale) {
-      final target = dragOffset.dx + dragDelta.dx;
-      final edge = (SketcherData.size.width * scale - constraints.maxWidth) / 2;
-      if (target < edge && target > -edge) {
-        targetX = target;
-      }
-    }
-    final target = Offset(targetX, targetY);
+    final target = _calculateDragTarget(constraints, dragDelta);
+
     if (target != dragOffset) {
       dragOffset = target;
-
       notifyListeners();
     }
   }
@@ -65,7 +50,6 @@ class SketcherVM extends ChangeNotifier {
       final normalScaleDragOffset = dragOffset / scale;
       _scale += 20;
       dragOffset = normalScaleDragOffset * scale;
-
       notifyListeners();
     }
   }
@@ -73,40 +57,53 @@ class SketcherVM extends ChangeNotifier {
   void reduceScale(BoxConstraints constraints) {
     if (_scale > 20) {
       final normalScaleDragOffset = dragOffset / scale;
-
-      var dx = normalScaleDragOffset.dx;
-      var dy = normalScaleDragOffset.dy;
-
       _scale -= 20;
-
-      dx *= scale;
-      dy *= scale;
-
-      if (constraints.maxWidth > SketcherData.size.width * scale) {
-        dx = 0;
-      } else {
-        final edgeX = (SketcherData.size.width * scale - constraints.maxWidth) / 2;
-        if (dx > edgeX) {
-          dx = edgeX;
-        } else if (dx < -edgeX) {
-          dx = -edgeX;
-        }
-      }
-
-      if (constraints.maxHeight > SketcherData.size.height * scale) {
-        dy = 0;
-      } else {
-        final edgeY = (SketcherData.size.height * scale - constraints.maxHeight) / 2;
-        if (dy > edgeY) {
-          dy = edgeY;
-        } else if (dy < -edgeY) {
-          dy = -edgeY;
-        }
-      }
-
-      dragOffset = Offset(dx, dy);
-
+      dragOffset = _calculateReduceScaleDragOffsetTarget(normalScaleDragOffset, constraints);
       notifyListeners();
     }
+  }
+
+  Offset _calculateReduceScaleDragOffsetTarget(Offset normalScaleDragOffset, BoxConstraints constraints) {
+    var dx = normalScaleDragOffset.dx * scale;
+    var dy = normalScaleDragOffset.dy * scale;
+
+    if (constraints.maxWidth > SketcherData.size.width * scale) {
+      dx = 0;
+    } else {
+      final edgeX = (SketcherData.size.width * scale - constraints.maxWidth) / 2;
+      dx = clampDouble(dx, -edgeX, edgeX);
+    }
+
+    if (constraints.maxHeight > SketcherData.size.height * scale) {
+      dy = 0;
+    } else {
+      final edgeY = (SketcherData.size.height * scale - constraints.maxHeight) / 2;
+      dy = clampDouble(dx, -edgeY, edgeY);
+    }
+
+    return Offset(dx, dy);
+  }
+
+  Offset _calculateDragTarget(BoxConstraints constraints, Offset dragDelta) {
+    var targetX = dragOffset.dx;
+    var targetY = dragOffset.dy;
+
+    if (constraints.maxHeight < SketcherData.size.height * scale) {
+      final target = dragOffset.dy + dragDelta.dy;
+      final edge = (SketcherData.size.height * scale - constraints.maxHeight) / 2;
+      if (target < edge && target > -edge) {
+        targetY = target;
+      }
+    }
+
+    if (constraints.maxWidth < SketcherData.size.width * scale) {
+      final target = dragOffset.dx + dragDelta.dx;
+      final edge = (SketcherData.size.width * scale - constraints.maxWidth) / 2;
+      if (target < edge && target > -edge) {
+        targetX = target;
+      }
+    }
+
+    return Offset(targetX, targetY);
   }
 }

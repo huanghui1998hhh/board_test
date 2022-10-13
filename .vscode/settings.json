@@ -3,4 +3,5 @@
         "source.fixAll": true
     },
     "dart.lineLength": 120,
+    "cmake.sourceDirectory": "${workspaceFolder}/windows",
 }
