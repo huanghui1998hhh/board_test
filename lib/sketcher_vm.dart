@@ -2,6 +2,19 @@ import 'package:board_test/sketcher_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+
+class SketcherPositionMetrics {
+  SketcherPositionMetrics(
+    this.viewportDimension,
+    this.sketcherSizeWithScale,
+    this.dragOffset,
+  );
+
+  double viewportDimension;
+  double sketcherSizeWithScale;
+  double dragOffset;
+}
 
 class SketcherVM extends ChangeNotifier {
   int _scale = 100;
