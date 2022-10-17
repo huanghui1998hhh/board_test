@@ -1,4 +1,5 @@
 import 'package:board_test/sketcher_data.dart';
+import 'package:board_test/sketcher_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -16,7 +17,7 @@ class SketcherPositionMetrics {
   double dragOffset;
 }
 
-class SketcherVM extends ChangeNotifier {
+class SketcherController extends ChangeNotifier {
   int _scale = 100;
 
   double get scale => _scale / 100;
@@ -32,11 +33,11 @@ class SketcherVM extends ChangeNotifier {
 
   Offset dragOffset = Offset.zero;
 
-  void mouseRollerHandle(BoxConstraints constraints, PointerScrollEvent event) {
+  void mouseRollerHandle(BoxConstraints constraints, PointerScrollEvent event, BuildContext context) {
     if (event.scrollDelta.dy > 0) {
-      reduceScale(constraints);
+      reduceScale(constraints, context);
     } else {
-      addScale();
+      addScale(constraints, context);
     }
   }
 
@@ -49,31 +50,43 @@ class SketcherVM extends ChangeNotifier {
     notifyListeners();
   }
 
-  void boardDragHandle(BoxConstraints constraints, Offset dragDelta) {
+  void boardDragHandle(BoxConstraints constraints, Offset dragDelta, BuildContext context) {
     final target = _calculateDragTarget(constraints, dragDelta);
 
     if (target != dragOffset) {
       dragOffset = target;
+      dispatch(constraints, context);
       notifyListeners();
     }
   }
 
-  void addScale() {
+  void addScale(BoxConstraints constraints, BuildContext context) {
     if (_scale < 300) {
       final normalScaleDragOffset = dragOffset / scale;
       _scale += 20;
       dragOffset = normalScaleDragOffset * scale;
+      dispatch(constraints, context);
       notifyListeners();
     }
   }
 
-  void reduceScale(BoxConstraints constraints) {
+  void reduceScale(BoxConstraints constraints, BuildContext context) {
     if (_scale > 20) {
       final normalScaleDragOffset = dragOffset / scale;
       _scale -= 20;
       dragOffset = _calculateReduceScaleDragOffsetTarget(normalScaleDragOffset, constraints);
+      dispatch(constraints, context);
       notifyListeners();
     }
+  }
+
+  void dispatch(BoxConstraints constraints, BuildContext context) {
+    SketcherVMetricsNotification(
+            SketcherPositionMetrics(constraints.maxHeight, SketcherData.size.height * scale, dragOffset.dy))
+        .dispatch(context);
+    SketcherHMetricsNotification(
+            SketcherPositionMetrics(constraints.maxWidth, SketcherData.size.width * scale, dragOffset.dx))
+        .dispatch(context);
   }
 
   Offset _calculateReduceScaleDragOffsetTarget(Offset normalScaleDragOffset, BoxConstraints constraints) {

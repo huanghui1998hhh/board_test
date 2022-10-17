@@ -15,7 +15,7 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
   SketcherScrollbarPainter({
     required Color color,
     required this.fadeoutOpacityAnimation,
-    required SketcherScrollAxis scrollAxis,
+    SketcherScrollAxis? scrollAxis,
     Color trackColor = const Color(0x00000000),
     Color trackBorderColor = const Color(0x00000000),
     TextDirection? textDirection,
@@ -161,18 +161,21 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
   }
 
   SketcherPositionMetrics? _lastMetrics;
-  final SketcherScrollAxis _scrollAxis;
+  final SketcherScrollAxis? _scrollAxis;
   Rect? _thumbRect;
   Rect? _trackRect;
   late double _thumbOffset;
+  double get thumbOffset => _thumbOffset;
 
   void update(
     SketcherPositionMetrics metrics,
+    SketcherScrollAxis scrollAxis,
   ) {
     if (_lastMetrics != null &&
         _lastMetrics!.dragOffset == metrics.dragOffset &&
         _lastMetrics!.sketcherSizeWithScale == metrics.sketcherSizeWithScale &&
-        _lastMetrics!.viewportDimension == metrics.viewportDimension) {
+        _lastMetrics!.viewportDimension == metrics.viewportDimension &&
+        _scrollAxis == scrollAxis) {
       return;
     }
 
@@ -207,7 +210,7 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     return Paint()..color = trackColor.withOpacity(trackColor.opacity * fadeoutOpacityAnimation.value);
   }
 
-  void _paintScrollbar(Canvas canvas, Size size, double thumbExtent) {
+  void _paintScrollbar(Canvas canvas, Size size, double thumbExtent, SketcherScrollAxis scrollAxis) {
     assert(
       textDirection != null,
       'A TextDirection must be provided before a Scrollbar can be painted.',
@@ -217,7 +220,7 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     final Size thumbSize, trackSize;
     final Offset trackOffset, borderStart, borderEnd;
 
-    switch (_scrollAxis) {
+    switch (scrollAxis) {
       case SketcherScrollAxis.vertical:
         thumbSize = Size(thickness, thumbExtent);
         trackSize = Size(thickness, _trackExtent);
@@ -282,9 +285,11 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
   double _getScrollToTrack(SketcherPositionMetrics metrics, double thumbExtent) {
     final double scrollableExtent = metrics.sketcherSizeWithScale - metrics.viewportDimension;
 
-    final double fractionPast = (scrollableExtent > 0)
-        ? clampDouble((metrics.dragOffset - (scrollableExtent / 2)) / scrollableExtent, 0.0, 1.0)
+    final double fractionPast = scrollableExtent > 0
+        ? clampDouble(((scrollableExtent / 2) - metrics.dragOffset) / scrollableExtent, 0.0, 1.0)
         : 0;
+
+    print('other: ${(scrollableExtent / 2) - metrics.dragOffset}');
 
     return fractionPast * (_trackExtent - thumbExtent);
   }
@@ -303,7 +308,7 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     final double thumbOffsetLocal = _getScrollToTrack(_lastMetrics!, thumbExtent);
     _thumbOffset = thumbOffsetLocal;
 
-    return _paintScrollbar(canvas, size, thumbExtent);
+    return _paintScrollbar(canvas, size, thumbExtent, _scrollAxis!);
   }
 
   bool hitTestInteractive(Offset position, PointerDeviceKind kind, {bool forHover = false}) {

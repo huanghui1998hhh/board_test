@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Sketcher extends StatefulWidget {
-  const Sketcher({Key? key}) : super(key: key);
+  final SketcherController controller;
+  const Sketcher({Key? key, required this.controller}) : super(key: key);
 
   @override
   State<Sketcher> createState() => _SketcherState();
@@ -16,13 +17,13 @@ class Sketcher extends StatefulWidget {
 class _SketcherState extends State<Sketcher> {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => SketcherVM(),
+    return ListenableProvider.value(
+      value: widget.controller,
       child: LayoutBuilder(
         builder: (context, constraints) => Listener(
           onPointerSignal: (event) {
             if (event is PointerScrollEvent) {
-              context.read<SketcherVM>().mouseRollerHandle(constraints, event);
+              context.read<SketcherController>().mouseRollerHandle(constraints, event, context);
             }
           },
           child: Container(
@@ -33,13 +34,13 @@ class _SketcherState extends State<Sketcher> {
                   alignment: Alignment.center,
                   child: UnconstrainedBox(
                     alignment: Alignment.center,
-                    child: Selector<SketcherVM, Offset>(
+                    child: Selector<SketcherController, Offset>(
                       selector: (_, sketcherVM) => sketcherVM.dragOffset,
                       builder: (_, dragOffset, child) => Transform.translate(
                         offset: dragOffset,
                         child: child,
                       ),
-                      child: Selector<SketcherVM, double>(
+                      child: Selector<SketcherController, double>(
                         selector: (_, sketcherVM) => sketcherVM.scale,
                         builder: (_, scale, child) => Stack(
                           alignment: Alignment.center,
@@ -58,16 +59,18 @@ class _SketcherState extends State<Sketcher> {
                         ),
                         child: Stack(
                           children: [
-                            Selector<SketcherVM, Set<RRect>>(
+                            Selector<SketcherController, Set<RRect>>(
                               selector: (_, sketcherVM) => sketcherVM.rects,
                               shouldRebuild: (_, __) => true,
                               builder: (_, rects, __) => UnselectedSketcher(
                                 rects: rects,
-                                onSelected: context.read<SketcherVM>().onBlockSelected,
-                                onDraggedBoard: (e) => context.read<SketcherVM>().boardDragHandle(constraints, e),
+                                onSelected: context.read<SketcherController>().onBlockSelected,
+                                onDraggedBoard: (e) {
+                                  context.read<SketcherController>().boardDragHandle(constraints, e, context);
+                                },
                               ),
                             ),
-                            Selector<SketcherVM, Set<RRect>>(
+                            Selector<SketcherController, Set<RRect>>(
                               selector: (_, sketcherVM) => sketcherVM.selectedTemp,
                               shouldRebuild: (_, __) => true,
                               builder: (_, selectedTemp, __) => SelectedSketcher(
@@ -85,15 +88,17 @@ class _SketcherState extends State<Sketcher> {
                   alignment: Alignment.bottomRight,
                   child: ButtonBar(
                     children: [
-                      Selector<SketcherVM, String>(
+                      Selector<SketcherController, String>(
                         selector: (_, sketcherVM) => sketcherVM.indicatorString,
                         builder: (_, indicatorString, __) => Text(indicatorString),
                       ),
                       IconButton(
-                        onPressed: () => context.read<SketcherVM>().reduceScale(constraints),
+                        onPressed: () => context.read<SketcherController>().reduceScale(constraints, context),
                         icon: const Text('-'),
                       ),
-                      IconButton(onPressed: context.read<SketcherVM>().addScale, icon: const Text('+')),
+                      IconButton(
+                          onPressed: () => context.read<SketcherController>().addScale(constraints, context),
+                          icon: const Text('+')),
                     ],
                   ),
                 )
