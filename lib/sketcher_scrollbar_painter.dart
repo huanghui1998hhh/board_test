@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:board_test/sketcher_vm.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,27 +21,29 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     Color trackBorderColor = const Color(0x00000000),
     TextDirection? textDirection,
     double thickness = _kScrollbarThickness,
+    EdgeInsets padding = EdgeInsets.zero,
     Radius? radius,
     Radius? trackRadius,
     OutlinedBorder? shape,
+    EdgeInsets margin = EdgeInsets.zero,
     double minLength = _kMinThumbExtent,
-    double? minOverscrollLength,
     ScrollbarOrientation? scrollbarOrientation,
     bool ignorePointer = false,
   })  : assert(radius == null || shape == null),
         assert(minLength >= 0),
-        assert(minOverscrollLength == null || minOverscrollLength <= minLength),
-        assert(minOverscrollLength == null || minOverscrollLength >= 0),
+        assert(padding.isNonNegative),
         _color = color,
         _textDirection = textDirection,
         _thickness = thickness,
         _radius = radius,
         _shape = shape,
+        _padding = padding,
         _minLength = minLength,
         _trackColor = trackColor,
         _trackBorderColor = trackBorderColor,
         _trackRadius = trackRadius,
         _scrollAxis = scrollAxis,
+        _margin = margin,
         _ignorePointer = ignorePointer {
     fadeoutOpacityAnimation.addListener(notifyListeners);
   }
@@ -98,6 +101,28 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     }
 
     _textDirection = value;
+    notifyListeners();
+  }
+
+  EdgeInsets get margin => _margin;
+  EdgeInsets _margin;
+  set margin(EdgeInsets value) {
+    if (margin == value) {
+      return;
+    }
+
+    _margin = value;
+    notifyListeners();
+  }
+
+  EdgeInsets get padding => _padding;
+  EdgeInsets _padding;
+  set padding(EdgeInsets value) {
+    if (padding == value) {
+      return;
+    }
+
+    _padding = value;
     notifyListeners();
   }
 
@@ -223,21 +248,22 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     switch (scrollAxis) {
       case SketcherScrollAxis.vertical:
         thumbSize = Size(thickness, thumbExtent);
-        trackSize = Size(thickness, _trackExtent);
-        x = size.width - thickness;
+        trackSize = Size(thickness + margin.horizontal, _trackExtent);
+        x = size.width - thickness - margin.right - padding.right;
         y = _thumbOffset;
-        trackOffset = Offset(x, 0);
+        trackOffset = Offset(x - margin.left, margin.top + padding.top);
         borderStart = trackOffset;
         borderEnd = Offset(trackOffset.dx, trackOffset.dy + _trackExtent);
         break;
       case SketcherScrollAxis.horizontal:
         thumbSize = Size(thumbExtent, thickness);
-        trackSize = Size(_trackExtent, thickness);
+        trackSize = Size(_trackExtent, thickness + margin.vertical);
         x = _thumbOffset;
-        y = size.height - thickness;
-        trackOffset = Offset(0, y);
+        y = size.height - thickness - margin.bottom - padding.bottom;
+        trackOffset = Offset(margin.left + padding.left, y - margin.top);
         borderStart = trackOffset;
         borderEnd = Offset(trackOffset.dx + _trackExtent, trackOffset.dy);
+
         break;
     }
 
@@ -265,7 +291,18 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     }
   }
 
-  double _thumbExtent() => _lastMetrics!.viewportDimension * _trackExtent / _lastMetrics!.sketcherSizeWithScale;
+  double _thumbExtent() {
+    final double fractionVisible = clampDouble(
+        (_lastMetrics!.viewportDimension - _mainAxisPadding) / (_lastMetrics!.sketcherSizeWithScale - _mainAxisPadding),
+        0.0,
+        1.0);
+
+    final double thumbExtent = _trackExtent * fractionVisible;
+
+    final double safeMinLength = math.min(minLength, _trackExtent);
+
+    return clampDouble(thumbExtent, safeMinLength, _trackExtent);
+  }
 
   @override
   void dispose() {
@@ -273,7 +310,36 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
     super.dispose();
   }
 
-  double get _trackExtent => _lastMetrics!.viewportDimension;
+  bool get _isVertical => _scrollAxis == SketcherScrollAxis.vertical;
+  double get _mainAxisPadding => _isVertical ? padding.vertical : padding.horizontal;
+  double get _mainAxisMargin => _isVertical ? margin.vertical : margin.horizontal;
+  double get _trackExtent => _lastMetrics!.viewportDimension - _mainAxisMargin - _mainAxisPadding;
+
+  double jumpTo(Offset tapLocalPosition) {
+    final double mainAxisDetail = _isVertical ? tapLocalPosition.dy : tapLocalPosition.dx;
+    final double mainMargin = _isVertical ? margin.top : margin.left;
+    final double thumbExtent = _thumbExtent();
+    final double scrollbarScrollableExtent = _trackExtent - thumbExtent;
+    final double fractionPast =
+        clampDouble(mainAxisDetail - mainMargin - thumbExtent / 2, 0, scrollbarScrollableExtent) /
+            scrollbarScrollableExtent;
+    final double lowerBound = (_lastMetrics!.sketcherSizeWithScale - _lastMetrics!.viewportDimension) / 2;
+
+    final double resultOffset = lerpDouble(lowerBound, -lowerBound, fractionPast)!;
+
+    metricsDragOffset = resultOffset;
+
+    return resultOffset;
+  }
+
+  set metricsDragOffset(double value) {
+    if (_lastMetrics!.dragOffset == value) {
+      return;
+    }
+
+    _lastMetrics!.dragOffset = value;
+    notifyListeners();
+  }
 
   double getTrackToScroll(double thumbOffsetLocal) {
     final double scrollableExtent = _lastMetrics!.sketcherSizeWithScale - _lastMetrics!.viewportDimension;
@@ -289,14 +355,12 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
         ? clampDouble(((scrollableExtent / 2) - metrics.dragOffset) / scrollableExtent, 0.0, 1.0)
         : 0;
 
-    print('other: ${(scrollableExtent / 2) - metrics.dragOffset}');
-
     return fractionPast * (_trackExtent - thumbExtent);
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (_lastMetrics == null || _lastMetrics!.sketcherSizeWithScale <= _lastMetrics!.viewportDimension) {
+    if (_lastMetrics == null || _lastMetrics!.sketcherSizeWithScale < _lastMetrics!.viewportDimension) {
       return;
     }
 
@@ -304,9 +368,11 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
       return;
     }
 
+    final double beforePadding = _isVertical ? padding.top : padding.left;
+    final double mainOffset = _isVertical ? margin.top : margin.left;
     final double thumbExtent = _thumbExtent();
     final double thumbOffsetLocal = _getScrollToTrack(_lastMetrics!, thumbExtent);
-    _thumbOffset = thumbOffsetLocal;
+    _thumbOffset = thumbOffsetLocal + mainOffset + beforePadding;
 
     return _paintScrollbar(canvas, size, thumbExtent, _scrollAxis!);
   }
@@ -395,9 +461,11 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
         textDirection != oldDelegate.textDirection ||
         thickness != oldDelegate.thickness ||
         fadeoutOpacityAnimation != oldDelegate.fadeoutOpacityAnimation ||
+        margin != oldDelegate.margin ||
         radius != oldDelegate.radius ||
         trackRadius != oldDelegate.trackRadius ||
         shape != oldDelegate.shape ||
+        padding != oldDelegate.padding ||
         minLength != oldDelegate.minLength ||
         ignorePointer != oldDelegate.ignorePointer;
   }

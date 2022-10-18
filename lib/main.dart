@@ -35,13 +35,17 @@ class _MainPageState extends State<MainPage> {
     return SketcherScrollbar(
       controller: controller,
       scrollAxis: SketcherScrollAxis.vertical,
-      thumbVisibility: true,
       thickness: 20,
+      thumbVisibility: true,
+      trackVisibility: true,
+      margin: const EdgeInsets.only(bottom: 20),
       child: SketcherScrollbar(
         controller: controller,
         scrollAxis: SketcherScrollAxis.horizontal,
         thickness: 20,
         thumbVisibility: true,
+        trackVisibility: true,
+        margin: const EdgeInsets.only(right: 20),
         child: Sketcher(controller: controller),
       ),
     );

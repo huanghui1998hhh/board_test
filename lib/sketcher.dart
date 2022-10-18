@@ -20,92 +20,96 @@ class _SketcherState extends State<Sketcher> {
     return ListenableProvider.value(
       value: widget.controller,
       child: LayoutBuilder(
-        builder: (context, constraints) => Listener(
-          onPointerSignal: (event) {
-            if (event is PointerScrollEvent) {
-              context.read<SketcherController>().mouseRollerHandle(constraints, event, context);
-            }
-          },
-          child: Container(
-            color: Colors.grey,
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: UnconstrainedBox(
+        builder: (context, constraints) {
+          context.read<SketcherController>().setViewportDimension(constraints.biggest, context);
+
+          return Listener(
+            onPointerSignal: (event) {
+              if (event is PointerScrollEvent) {
+                context.read<SketcherController>().mouseRollerHandle(event, context);
+              }
+            },
+            child: Container(
+              color: Colors.grey,
+              child: Stack(
+                children: [
+                  Align(
                     alignment: Alignment.center,
-                    child: Selector<SketcherController, Offset>(
-                      selector: (_, sketcherVM) => sketcherVM.dragOffset,
-                      builder: (_, dragOffset, child) => Transform.translate(
-                        offset: dragOffset,
-                        child: child,
-                      ),
-                      child: Selector<SketcherController, double>(
-                        selector: (_, sketcherVM) => sketcherVM.scale,
-                        builder: (_, scale, child) => Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              height: SketcherData.size.height * scale,
-                              width: SketcherData.size.width * scale,
-                              color: Colors.white,
-                            ),
-                            Transform.scale(
-                              scale: scale,
-                              alignment: Alignment.center,
-                              child: child,
-                            ),
-                          ],
+                    child: UnconstrainedBox(
+                      alignment: Alignment.center,
+                      child: Selector<SketcherController, Offset>(
+                        selector: (_, sketcherVM) => sketcherVM.dragOffset,
+                        builder: (_, dragOffset, child) => Transform.translate(
+                          offset: dragOffset,
+                          child: child,
                         ),
-                        child: Stack(
-                          children: [
-                            Selector<SketcherController, Set<RRect>>(
-                              selector: (_, sketcherVM) => sketcherVM.rects,
-                              shouldRebuild: (_, __) => true,
-                              builder: (_, rects, __) => UnselectedSketcher(
-                                rects: rects,
-                                onSelected: context.read<SketcherController>().onBlockSelected,
-                                onDraggedBoard: (e) {
-                                  context.read<SketcherController>().boardDragHandle(constraints, e, context);
-                                },
+                        child: Selector<SketcherController, double>(
+                          selector: (_, sketcherVM) => sketcherVM.scale,
+                          builder: (_, scale, child) => Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                height: SketcherData.size.height * scale,
+                                width: SketcherData.size.width * scale,
+                                color: Colors.white,
                               ),
-                            ),
-                            Selector<SketcherController, Set<RRect>>(
-                              selector: (_, sketcherVM) => sketcherVM.selectedTemp,
-                              shouldRebuild: (_, __) => true,
-                              builder: (_, selectedTemp, __) => SelectedSketcher(
-                                rects: selectedTemp,
-                                color: Colors.red,
+                              Transform.scale(
+                                scale: scale,
+                                alignment: Alignment.center,
+                                child: child,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Selector<SketcherController, Set<RRect>>(
+                                selector: (_, sketcherVM) => sketcherVM.rects,
+                                shouldRebuild: (_, __) => true,
+                                builder: (_, rects, __) => UnselectedSketcher(
+                                  rects: rects,
+                                  onSelected: context.read<SketcherController>().onBlockSelected,
+                                  onDraggedBoard: (e) {
+                                    context.read<SketcherController>().boardDragHandle(e, context);
+                                  },
+                                ),
+                              ),
+                              Selector<SketcherController, Set<RRect>>(
+                                selector: (_, sketcherVM) => sketcherVM.selectedTemp,
+                                shouldRebuild: (_, __) => true,
+                                builder: (_, selectedTemp, __) => SelectedSketcher(
+                                  rects: selectedTemp,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: ButtonBar(
-                    children: [
-                      Selector<SketcherController, String>(
-                        selector: (_, sketcherVM) => sketcherVM.indicatorString,
-                        builder: (_, indicatorString, __) => Text(indicatorString),
-                      ),
-                      IconButton(
-                        onPressed: () => context.read<SketcherController>().reduceScale(constraints, context),
-                        icon: const Text('-'),
-                      ),
-                      IconButton(
-                          onPressed: () => context.read<SketcherController>().addScale(constraints, context),
-                          icon: const Text('+')),
-                    ],
-                  ),
-                )
-              ],
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: ButtonBar(
+                      children: [
+                        Selector<SketcherController, String>(
+                          selector: (_, sketcherVM) => sketcherVM.indicatorString,
+                          builder: (_, indicatorString, __) => Text(indicatorString),
+                        ),
+                        IconButton(
+                          onPressed: () => context.read<SketcherController>().reduceScale(context),
+                          icon: const Text('-'),
+                        ),
+                        IconButton(
+                            onPressed: () => context.read<SketcherController>().addScale(context),
+                            icon: const Text('+')),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

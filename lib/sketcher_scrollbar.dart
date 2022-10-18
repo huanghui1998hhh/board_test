@@ -1,11 +1,8 @@
-// Copyright 2014 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'dart:async';
 
 import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcher_vm.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -15,13 +12,6 @@ const Duration _kScrollbarFadeDuration = Duration(milliseconds: 300);
 const Duration _kScrollbarTimeToFade = Duration(milliseconds: 600);
 
 class SketcherScrollbar extends StatefulWidget {
-  /// Creates a basic raw scrollbar that wraps the given [child].
-  ///
-  /// The [child], or a descendant of the [child], should be a source of
-  /// [ScrollNotification] notifications, typically a [Scrollable] widget.
-  ///
-  /// The [child], [fadeDuration], [pressDuration], and [timeToFade] arguments
-  /// must not be null.
   const SketcherScrollbar({
     super.key,
     required this.child,
@@ -42,16 +32,8 @@ class SketcherScrollbar extends StatefulWidget {
     this.timeToFade = _kScrollbarTimeToFade,
     this.pressDuration = Duration.zero,
     this.interactive,
-    @Deprecated(
-      'Use thumbVisibility instead. '
-      'This feature was deprecated after v2.9.0-1.0.pre.',
-    )
-        this.isAlwaysShown,
-  })  : assert(
-            thumbVisibility == null || isAlwaysShown == null,
-            'Scrollbar thumb appearance should only be controlled with thumbVisibility, '
-            'isAlwaysShown is deprecated.'),
-        assert(!((thumbVisibility == false || isAlwaysShown == false) && (trackVisibility ?? false)),
+    this.margin = EdgeInsets.zero,
+  })  : assert(!((thumbVisibility == false) && (trackVisibility ?? false)),
             'A scrollbar track cannot be drawn without a scrollbar thumb.'),
         assert(minThumbLength >= 0),
         assert(minOverscrollLength == null || minOverscrollLength <= minThumbLength),
@@ -61,11 +43,6 @@ class SketcherScrollbar extends StatefulWidget {
   final Widget child;
   final SketcherController controller;
   final bool? thumbVisibility;
-  @Deprecated(
-    'Use thumbVisibility instead. '
-    'This feature was deprecated after v2.9.0-1.0.pre.',
-  )
-  final bool? isAlwaysShown;
   final OutlinedBorder? shape;
   final Radius? radius;
   final double? thickness;
@@ -81,63 +58,28 @@ class SketcherScrollbar extends StatefulWidget {
   final Duration pressDuration;
   final bool? interactive;
   final SketcherScrollAxis scrollAxis;
+  final EdgeInsets margin;
 
   @override
   SketcherScrollbarState<SketcherScrollbar> createState() => SketcherScrollbarState<SketcherScrollbar>();
 }
 
-/// The state for a [SketcherScrollbar] widget, also shared by the [Scrollbar] and
-/// [CupertinoScrollbar] widgets.
-///
-/// Controls the animation that fades a scrollbar's thumb in and out of view.
-///
-/// Provides defaults gestures for dragging the scrollbar thumb and tapping on the
-/// scrollbar track.
 class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with TickerProviderStateMixin<T> {
+  Offset? _dragScrollbarAxisOffset;
   Timer? _fadeoutTimer;
   late AnimationController _fadeoutAnimationController;
   late Animation<double> _fadeoutOpacityAnimation;
   final GlobalKey _scrollbarPainterKey = GlobalKey();
   bool _hoverIsActive = false;
 
-  /// Used to paint the scrollbar.
-  ///
-  /// Can be customized by subclasses to change scrollbar behavior by overriding
-  /// [updateScrollbarPainter].
   @protected
   late final SketcherScrollbarPainter sketcherScrollbarPainter;
 
-  /// Overridable getter to indicate that the scrollbar should be visible, even
-  /// when a scroll is not underway.
-  ///
-  /// Subclasses can override this getter to make its value depend on an inherited
-  /// theme.
-  ///
-  /// Defaults to false when [SketcherScrollbar.thumbVisibility] or
-  /// [SketcherScrollbar.thumbVisibility] is null.
-  ///
-  /// See also:
-  ///
-  ///   * [SketcherScrollbar.thumbVisibility], which overrides the default behavior.
   @protected
-  bool get showScrollbar => widget.isAlwaysShown ?? widget.thumbVisibility ?? false;
+  bool get showScrollbar => widget.thumbVisibility ?? false;
 
   bool get _showTrack => showScrollbar && (widget.trackVisibility ?? false);
 
-  /// Overridable getter to indicate is gestures should be enabled on the
-  /// scrollbar.
-  ///
-  /// When false, the scrollbar will not respond to gesture or hover events,
-  /// and will allow to click through it.
-  ///
-  /// Subclasses can override this getter to make its value depend on an inherited
-  /// theme.
-  ///
-  /// Defaults to true when [SketcherScrollbar.interactive] is null.
-  ///
-  /// See also:
-  ///
-  ///   * [SketcherScrollbar.interactive], which overrides the default behavior.
   @protected
   bool get enableGestures => widget.interactive ?? true;
 
@@ -160,8 +102,8 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
       trackRadius: widget.trackRadius,
       shape: widget.shape,
       minLength: widget.minThumbLength,
-      minOverscrollLength: widget.minOverscrollLength ?? widget.minThumbLength,
       scrollAxis: widget.scrollAxis,
+      margin: widget.margin,
     );
   }
 
@@ -193,6 +135,8 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
       ..trackBorderColor = _showTrack ? widget.trackBorderColor ?? const Color(0x1a000000) : const Color(0x00000000)
       ..textDirection = Directionality.of(context)
       ..thickness = widget.thickness ?? _kScrollbarThickness
+      ..margin = widget.margin
+      ..padding = MediaQuery.of(context).padding
       ..radius = widget.radius
       ..shape = widget.shape
       ..minLength = widget.minThumbLength
@@ -202,8 +146,8 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
   @override
   void didUpdateWidget(T oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isAlwaysShown != oldWidget.isAlwaysShown || widget.thumbVisibility != oldWidget.thumbVisibility) {
-      if ((widget.isAlwaysShown ?? false) || (widget.thumbVisibility ?? false)) {
+    if (widget.thumbVisibility != oldWidget.thumbVisibility) {
+      if (widget.thumbVisibility ?? false) {
         assert(_debugScheduleCheckHasValidScrollPosition());
         _fadeoutTimer?.cancel();
         _fadeoutAnimationController.animateTo(1.0);
@@ -214,40 +158,30 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
   }
 
   void _updateScrollPosition(Offset updatedOffset) {
-    //TODO:
-    // assert(_currentController != null);
-    // assert(_dragScrollbarAxisOffset != null);
+    assert(_dragScrollbarAxisOffset != null);
 
-    // final ScrollPosition position = _currentController!.position;
-    // late double primaryDelta;
-    // switch (widget.scrollAxis) {
-    //   case SketcherScrollAxis.horizontal:
-    //     primaryDelta = updatedOffset.dx - _dragScrollbarAxisOffset!.dx;
-    //     break;
-    //   case SketcherScrollAxis.vertical:
-    //     primaryDelta = updatedOffset.dy - _dragScrollbarAxisOffset!.dy;
-    //     break;
-    // }
+    late double primaryDelta;
+    switch (widget.scrollAxis) {
+      case SketcherScrollAxis.horizontal:
+        primaryDelta = _dragScrollbarAxisOffset!.dx - updatedOffset.dx;
+        break;
+      case SketcherScrollAxis.vertical:
+        primaryDelta = _dragScrollbarAxisOffset!.dy - updatedOffset.dy;
+        break;
+    }
 
-    // final double scrollOffsetLocal = scrollbarPainter.getTrackToScroll(primaryDelta);
-    // final double scrollOffsetGlobal = scrollOffsetLocal + position.pixels;
-    // if (scrollOffsetGlobal != position.pixels) {
-    //   final double physicsAdjustment = position.physics.applyBoundaryConditions(position, scrollOffsetGlobal);
-    //   double newPosition = scrollOffsetGlobal - physicsAdjustment;
+    final double scrollOffsetLocal = sketcherScrollbarPainter.getTrackToScroll(primaryDelta);
+    final double scrollOffsetGlobal = isVertical
+        ? clampDouble(scrollOffsetLocal + widget.controller.dragOffset.dy, -widget.controller.lowerBoundY,
+            widget.controller.lowerBoundY)
+        : clampDouble(scrollOffsetLocal + widget.controller.dragOffset.dx, -widget.controller.lowerBoundX,
+            widget.controller.lowerBoundX);
 
-    //   switch (ScrollConfiguration.of(context).getPlatform(context)) {
-    //     case TargetPlatform.fuchsia:
-    //     case TargetPlatform.linux:
-    //     case TargetPlatform.macOS:
-    //     case TargetPlatform.windows:
-    //       newPosition = clampDouble(newPosition, position.minScrollExtent, position.maxScrollExtent);
-    //       break;
-    //     case TargetPlatform.iOS:
-    //     case TargetPlatform.android:
-    //       break;
-    //   }
-    //   position.jumpTo(newPosition);
-    // }
+    sketcherScrollbarPainter.metricsDragOffset = scrollOffsetGlobal;
+
+    widget.controller.dragOffset = isVertical
+        ? Offset(widget.controller.dragOffset.dx, scrollOffsetGlobal)
+        : Offset(scrollOffsetGlobal, widget.controller.dragOffset.dy);
   }
 
   void _maybeStartFadeoutTimer() {
@@ -260,9 +194,6 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
     }
   }
 
-  /// Handler called when a press on the scrollbar thumb has been recognized.
-  ///
-  /// Cancels the [Timer] associated with the fade animation of the scrollbar.
   @protected
   @mustCallSuper
   void handleThumbPress() {
@@ -274,61 +205,31 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
   void handleThumbPressStart(Offset localPosition) {
     _fadeoutTimer?.cancel();
     _fadeoutAnimationController.forward();
+    _dragScrollbarAxisOffset = localPosition;
   }
 
   @protected
   @mustCallSuper
   void handleThumbPressUpdate(Offset localPosition) {
     _updateScrollPosition(localPosition);
+    _dragScrollbarAxisOffset = localPosition;
   }
 
   @protected
   @mustCallSuper
   void handleThumbPressEnd(Offset localPosition, Velocity velocity) {
     _maybeStartFadeoutTimer();
+    _dragScrollbarAxisOffset = null;
   }
 
   void _handleTrackTapDown(TapDownDetails details) {
-    //TODO:
-    // _currentController = widget.controller;
-
-    // double scrollIncrement;
-
-    // final ScrollIncrementCalculator? calculator = Scrollable.of(
-    //   _currentController!.position.context.notificationContext!,
-    // )?.widget.incrementCalculator;
-    // if (calculator != null) {
-    //   scrollIncrement = calculator(
-    //     ScrollIncrementDetails(
-    //       type: ScrollIncrementType.page,
-    //       metrics: _currentController!.position,
-    //     ),
-    //   );
-    // } else {
-    //   // Default page increment
-    //   scrollIncrement = 0.8 * _currentController!.position.viewportDimension;
-    // }
-
-    // // Adjust scrollIncrement for direction
-    // switch (widget.scrollAxis) {
-    //   case SketcherScrollAxis.vertical:
-    //     if (details.localPosition.dy < scrollbarPainter.thumbOffset) {
-    //       scrollIncrement = -scrollIncrement;
-    //     }
-    //     break;
-    //   case SketcherScrollAxis.horizontal:
-    //     if (details.localPosition.dx < scrollbarPainter.thumbOffset) {
-    //       scrollIncrement = -scrollIncrement;
-    //     }
-    //     break;
-    // }
-
-    // _currentController!.position.moveTo(
-    //   _currentController!.position.pixels + scrollIncrement,
-    //   duration: const Duration(milliseconds: 100),
-    //   curve: Curves.easeInOut,
-    // );
+    final double tapResultOffset = sketcherScrollbarPainter.jumpTo(details.localPosition);
+    widget.controller.dragOffset = isVertical
+        ? Offset(widget.controller.dragOffset.dx, tapResultOffset)
+        : Offset(tapResultOffset, widget.controller.dragOffset.dy);
   }
+
+  bool get isVertical => widget.scrollAxis == SketcherScrollAxis.vertical;
 
   bool _handleScrollMetricsNotification(SketcherMetricsNotification notification) {
     if (showScrollbar) {
@@ -426,6 +327,7 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
   void handleHoverExit(PointerExitEvent event) {
     _hoverIsActive = false;
     _maybeStartFadeoutTimer();
+    print('exit');
   }
 
   @override
@@ -483,13 +385,13 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
       ),
     );
 
-    if (widget.scrollAxis == SketcherScrollAxis.horizontal) {
-      child = NotificationListener<SketcherHMetricsNotification>(
+    if (isVertical) {
+      child = NotificationListener<SketcherVMetricsNotification>(
         onNotification: _handleScrollMetricsNotification,
         child: child,
       );
     } else {
-      child = NotificationListener<SketcherVMetricsNotification>(
+      child = NotificationListener<SketcherHMetricsNotification>(
         onNotification: _handleScrollMetricsNotification,
         child: child,
       );
