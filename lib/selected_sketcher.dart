@@ -1,27 +1,29 @@
-import 'package:board_test/sketcher_data.dart';
 import 'package:flutter/material.dart';
 
 class SelectedSketcher extends LeafRenderObjectWidget {
   final Set<RRect> rects;
   final Color color;
+  final Size sketcherSize;
 
   const SelectedSketcher({
     super.key,
     required this.rects,
+    required this.sketcherSize,
     this.color = Colors.black,
   });
 
   @override
-  RenderObject createRenderObject(BuildContext context) => RenderSelectedSketcher(rects, color);
+  RenderObject createRenderObject(BuildContext context) => RenderSelectedSketcher(rects, color, sketcherSize);
 
   @override
   void updateRenderObject(BuildContext context, covariant RenderSelectedSketcher renderObject) => renderObject
     ..rects = rects
-    ..color = color;
+    ..color = color
+    ..sketcherSize = sketcherSize;
 }
 
 class RenderSelectedSketcher extends RenderBox {
-  RenderSelectedSketcher(this._rects, Color color)
+  RenderSelectedSketcher(this._rects, Color color, this._sketcherSize)
       : pen = Paint()
           ..color = color
           ..style = PaintingStyle.stroke
@@ -30,6 +32,17 @@ class RenderSelectedSketcher extends RenderBox {
   Set<RRect> _rects;
   set rects(Set<RRect> value) {
     _rects = value;
+    markNeedsPaint();
+  }
+
+  final Size _sketcherSize;
+  set sketcherSize(Size value) {
+    if (_sketcherSize == value) {
+      return;
+    }
+
+    value = value;
+    markNeedsLayout();
     markNeedsPaint();
   }
 
@@ -51,5 +64,5 @@ class RenderSelectedSketcher extends RenderBox {
   bool get sizedByParent => false;
 
   @override
-  void performLayout() => size = SketcherData.size;
+  void performLayout() => size = _sketcherSize;
 }

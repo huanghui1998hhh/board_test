@@ -1,4 +1,3 @@
-import 'package:board_test/sketcher_data.dart';
 import 'package:board_test/sketcher_scrollbar.dart';
 import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:flutter/cupertino.dart';
@@ -21,34 +20,38 @@ class SketcherPositionMetrics {
 class SketcherController extends ChangeNotifier {
   int _scale = 100;
 
+  // ignore: prefer_const_constructors
+  Size _sketcherSize = Size(2000, 1000);
+  Size get sketcherSize => _sketcherSize;
+  set sketcherSize(Size value) {
+    if (_sketcherSize == value) {
+      return;
+    }
+
+    _sketcherSize = value;
+    notifyListeners();
+  }
+
   double get scale => _scale / 100;
   String get indicatorString => '$_scale%';
   double get lowerBoundX => (sketcherSizeWithScale.width - viewportDimension.width) / 2;
   double get lowerBoundY => (sketcherSizeWithScale.height - viewportDimension.height) / 2;
-  Size get sketcherSizeWithScale => SketcherData.size * scale;
+  Size get sketcherSizeWithScale => _sketcherSize * scale;
 
-  Size? _viewportDimension;
-  Size get viewportDimension => _viewportDimension!;
+  Size? _lastViewportDimension;
+  Size get viewportDimension => _lastViewportDimension!;
   setViewportDimension(Size value, BuildContext context) {
-    if (_viewportDimension == value) {
+    if (_lastViewportDimension == value) {
       return;
     }
 
-    _viewportDimension = value;
+    _lastViewportDimension = value;
 
     dragOffset = dragOffset.translate(value.width > sketcherSizeWithScale.width ? -dragOffset.dx : 0,
         value.height > sketcherSizeWithScale.height ? -dragOffset.dy : 0);
 
     dispatch(context);
   }
-
-  Set<RRect> rects = {
-    RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 200, 200), const Radius.circular(20)),
-    RRect.fromRectAndRadius(const Rect.fromLTWH(200, 200, 200, 200), const Radius.circular(60)),
-    RRect.fromRectAndRadius(const Rect.fromLTWH(400, 400, 800, 200), const Radius.circular(80)),
-  };
-
-  Set<RRect> selectedTemp = {};
 
   Offset _dragOffset = Offset.zero;
   Offset get dragOffset => _dragOffset;
@@ -67,15 +70,6 @@ class SketcherController extends ChangeNotifier {
     } else {
       addScale(context);
     }
-  }
-
-  void onBlockSelected(RRect block) {
-    rects.addAll(selectedTemp);
-    selectedTemp.clear();
-    rects.remove(block);
-    selectedTemp.add(block);
-
-    notifyListeners();
   }
 
   void boardDragHandle(Offset dragDelta, BuildContext context) {
@@ -129,14 +123,14 @@ class SketcherController extends ChangeNotifier {
     var dx = normalScaleDragOffset.dx * scale;
     var dy = normalScaleDragOffset.dy * scale;
 
-    if (constraints.width > SketcherData.size.width * scale) {
+    if (constraints.width > _sketcherSize.width * scale) {
       dx = 0;
     } else {
       final edgeX = (sketcherSizeWithScale.width - constraints.width) / 2;
       dx = clampDouble(dx, -edgeX, edgeX);
     }
 
-    if (constraints.height > SketcherData.size.height * scale) {
+    if (constraints.height > _sketcherSize.height * scale) {
       dy = 0;
     } else {
       final edgeY = (sketcherSizeWithScale.height - constraints.height) / 2;
@@ -150,17 +144,17 @@ class SketcherController extends ChangeNotifier {
     var targetX = _dragOffset.dx;
     var targetY = _dragOffset.dy;
 
-    if (constraints.height < SketcherData.size.height * scale) {
+    if (constraints.height < _sketcherSize.height * scale) {
       final target = _dragOffset.dy + dragDelta.dy;
-      final edge = (SketcherData.size.height * scale - constraints.height) / 2;
+      final edge = (_sketcherSize.height * scale - constraints.height) / 2;
       if (target < edge && target > -edge) {
         targetY = target;
       }
     }
 
-    if (constraints.width < SketcherData.size.width * scale) {
+    if (constraints.width < _sketcherSize.width * scale) {
       final target = _dragOffset.dx + dragDelta.dx;
-      final edge = (SketcherData.size.width * scale - constraints.width) / 2;
+      final edge = (_sketcherSize.width * scale - constraints.width) / 2;
       if (target < edge && target > -edge) {
         targetX = target;
       }

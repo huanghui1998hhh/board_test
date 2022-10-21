@@ -327,7 +327,6 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
   void handleHoverExit(PointerExitEvent event) {
     _hoverIsActive = false;
     _maybeStartFadeoutTimer();
-    print('exit');
   }
 
   @override

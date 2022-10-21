@@ -1,36 +1,40 @@
-import 'package:board_test/sketcher_data.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-class UnselectedSketcher extends LeafRenderObjectWidget {
+class UnselectedSketcher extends MultiChildRenderObjectWidget {
   final Set<RRect> rects;
   final Color color;
+  final Size sketcherSize;
+
   final void Function(RRect)? onSelected;
   final void Function(Offset dragDelta)? onDraggedBoard;
 
-  const UnselectedSketcher({
+  UnselectedSketcher({
     super.key,
     required this.rects,
+    required this.sketcherSize,
     this.color = Colors.black,
     this.onSelected,
     this.onDraggedBoard,
+    super.children,
   });
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      RenderUnselectedSketcher(rects, color, onSelected, onDraggedBoard);
+      RenderUnselectedSketcher(rects, color, sketcherSize, onSelected, onDraggedBoard);
 
   @override
   void updateRenderObject(BuildContext context, covariant RenderUnselectedSketcher renderObject) => renderObject
     ..rects = rects
     ..color = color
+    ..sketcherSize = sketcherSize
     ..onSelected = onSelected
     ..onDraggedBoard = onDraggedBoard;
 }
 
 class RenderUnselectedSketcher extends RenderBox {
-  RenderUnselectedSketcher(this._rects, Color color, this.onSelected, this.onDraggedBoard)
+  RenderUnselectedSketcher(this._rects, Color color, this._sketcherSize, this.onSelected, this.onDraggedBoard)
       : pen = Paint()
           ..color = color
           ..style = PaintingStyle.stroke
@@ -52,25 +56,21 @@ class RenderUnselectedSketcher extends RenderBox {
     markNeedsPaint();
   }
 
-  // Picture? _picture;
-  // final _previous = Path();
-  // var _current = Path();
+  final Size _sketcherSize;
+  set sketcherSize(Size value) {
+    if (_sketcherSize == value) {
+      return;
+    }
+
+    value = value;
+    markNeedsLayout();
+    markNeedsPaint();
+  }
 
   @override
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
-    // if (event is PointerDownEvent) {
-    //   _current.moveTo(event.localPosition.dx, event.localPosition.dy);
-    // } else if (event is PointerMoveEvent) {
-    //   _current.lineTo(event.localPosition.dx, event.localPosition.dy);
-    //   markNeedsPaint();
-    // } else if (event is PointerUpEvent) {
-    //   _previous.addPath(_current, Offset.zero);
-    //   _current = Path();
-    //   PictureRecorder recorder = PictureRecorder();
-    //   Canvas canvas = Canvas(recorder);
-    //   canvas.drawPath(_previous, pen2);
-    //   _picture = recorder.endRecording();
-    //   markNeedsPaint();
+    // if (event is PointerHoverEvent) {
+    //   print(_rects.firstWhereOrNull((RRect e) => e.contains(event.localPosition)) != null);
     // }
 
     if (event is PointerDownEvent) {
@@ -89,13 +89,9 @@ class RenderUnselectedSketcher extends RenderBox {
   void paint(PaintingContext context, Offset offset) {
     context.canvas.translate(offset.dx, offset.dy);
 
-    // if (_picture != null) context.canvas.drawPicture(_picture!);
-    // context.canvas.drawPath(_current, pen);
-    // context.canvas
-    //     .drawRRect(RRect.fromLTRBR(0, 0, 20, 20, Radius.circular(8)), pen);
-    // TextPainter(text: TextSpan(text: "text"), textDirection: TextDirection.ltr)
-    //   ..layout()
-    //   ..paint(context.canvas, offset);
+    TextPainter(text: const TextSpan(text: "text"), textDirection: TextDirection.ltr)
+      ..layout()
+      ..paint(context.canvas, offset);
 
     for (var e in _rects) {
       context.canvas.drawRRect(e, pen);
@@ -103,7 +99,7 @@ class RenderUnselectedSketcher extends RenderBox {
   }
 
   @override
-  void performLayout() => size = SketcherData.size;
+  void performLayout() => size = _sketcherSize;
 
   @override
   bool get sizedByParent => false;
