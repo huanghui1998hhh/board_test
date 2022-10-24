@@ -239,7 +239,7 @@ class RenderSketcherContnetStack extends RenderBox
       final StackParentData childParentData = child.parentData! as StackParentData;
 
       if (!childParentData.isPositioned) {
-        final Size childSize = layoutChild(child, const BoxConstraints());
+        final Size childSize = layoutChild(child, constraints.loosen());
 
         width = math.max(width, childSize.width);
         height = math.max(height, childSize.height);
