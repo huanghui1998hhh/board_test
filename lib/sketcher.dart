@@ -6,7 +6,13 @@ import 'package:provider/provider.dart';
 class Sketcher extends StatefulWidget {
   final WidgetBuilder builder;
   final SketcherController controller;
-  const Sketcher({Key? key, required this.controller, required this.builder}) : super(key: key);
+  final VoidCallback onTapSpace;
+  const Sketcher({
+    Key? key,
+    required this.controller,
+    required this.builder,
+    required this.onTapSpace,
+  }) : super(key: key);
 
   @override
   State<Sketcher> createState() => _SketcherState();
@@ -48,10 +54,13 @@ class _SketcherState extends State<Sketcher> {
                             children: [
                               Selector<SketcherController, Size>(
                                 selector: (_, sketcherVM) => sketcherVM.sketcherSize,
-                                builder: (_, size, child) => Container(
-                                  height: size.height * scale,
-                                  width: size.width * scale,
-                                  color: Colors.white,
+                                builder: (_, size, child) => GestureDetector(
+                                  onTap: widget.onTapSpace,
+                                  child: Container(
+                                    height: size.height * scale,
+                                    width: size.width * scale,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               Transform.scale(

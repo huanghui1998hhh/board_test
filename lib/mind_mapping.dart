@@ -1,20 +1,17 @@
+import 'package:board_test/topic.dart';
 import 'package:flutter/cupertino.dart';
 
 class MindMapping extends ChangeNotifier {
-  Set<RRect> rects = {
-    RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 200, 200), const Radius.circular(20)),
-    RRect.fromRectAndRadius(const Rect.fromLTWH(200, 200, 200, 200), const Radius.circular(60)),
-    RRect.fromRectAndRadius(const Rect.fromLTWH(400, 400, 800, 200), const Radius.circular(80)),
-  };
+  Topic? _selectedTopic;
+  Topic? get selectedTopic => _selectedTopic;
+  set selectedTopic(Topic? newSelected) {
+    if (newSelected == _selectedTopic) {
+      return;
+    }
 
-  Set<RRect> selectedTemp = {};
-
-  void onBlockSelected(RRect block) {
-    rects.addAll(selectedTemp);
-    selectedTemp.clear();
-    rects.remove(block);
-    selectedTemp.add(block);
-
+    _selectedTopic = newSelected;
     notifyListeners();
   }
+
+  Topic mainTopic = Topic(content: '中心主题');
 }

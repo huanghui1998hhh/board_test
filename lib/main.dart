@@ -1,14 +1,12 @@
-import 'package:board_test/aspect_ratio_constraint_box.dart';
 import 'package:board_test/mind_mapping.dart';
 import 'package:board_test/sketcher.dart';
 import 'package:board_test/sketcher_scrollbar.dart';
 import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcher_vm.dart';
 import 'package:board_test/sketcker_content_stack.dart';
+import 'package:board_test/topic_block.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'hover_indicatable.dart';
 
 void main() => runApp(const MyApp());
 
@@ -35,8 +33,6 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final controller = SketcherController();
-  final _text = TextEditingController(text: 'asdklgjhasdlkjgha撒了开个价是露可简单');
-  final _focusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -58,25 +54,15 @@ class _MainPageState extends State<MainPage> {
           margin: const EdgeInsets.only(right: 20),
           child: Sketcher(
             controller: controller,
+            onTapSpace: () {
+              context.read<MindMapping>().selectedTopic = null;
+            },
             builder: (context) {
               return SketcherContnetStack(
                 children: [
                   Align(
                     alignment: Alignment.center,
-                    child: HoverIndicatable(
-                      child: AspectRatioConstraintBox(
-                        idealRatio: 3,
-                        threshold: 40,
-                        child: EditableText(
-                          style: const TextStyle(fontSize: 20, color: Colors.black),
-                          controller: _text,
-                          backgroundCursorColor: Colors.blue,
-                          cursorColor: Colors.red,
-                          focusNode: _focusNode,
-                          maxLines: null,
-                        ),
-                      ),
-                    ),
+                    child: TopicBlock(topic: context.read<MindMapping>().mainTopic),
                   )
                 ],
               );

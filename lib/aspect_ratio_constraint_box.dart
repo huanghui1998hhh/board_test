@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -57,30 +58,30 @@ class RenderAspectRatioConstraintBox extends RenderProxyBox {
   }
 
   @override
-  Size computeDryLayout(BoxConstraints constraints) {
-    assert(debugCannotComputeDryLayout(
-      error: FlutterError.fromParts(<DiagnosticsNode>[
-        ErrorSummary('The ${objectRuntimeType(this, 'RenderBox')} class does not implement "computeDryLayout".'),
-        ErrorHint(
-          'If you are not writing your own RenderBox subclass, then this is not\n'
-          'your fault. Contact support: https://github.com/flutter/flutter/issues/new?template=2_bug.md',
-        ),
-      ]),
-    ));
-    return Size.zero;
-  }
+  // Size computeDryLayout(BoxConstraints constraints) {
+  //   assert(debugCannotComputeDryLayout(
+  //     error: FlutterError.fromParts(<DiagnosticsNode>[
+  //       ErrorSummary('The ${objectRuntimeType(this, 'RenderBox')} class does not implement "computeDryLayout".'),
+  //       ErrorHint(
+  //         'If you are not writing your own RenderBox subclass, then this is not\n'
+  //         'your fault. Contact support: https://github.com/flutter/flutter/issues/new?template=2_bug.md',
+  //       ),
+  //     ]),
+  //   ));
+  //   return Size.zero;
+  // }
 
   @override
   void performLayout() {
     if (child != null) {
-      child!.layout(const BoxConstraints(), parentUsesSize: true);
-      size = child!.size;
+      child!.layout(constraints, parentUsesSize: true);
       double lowerBound = 0;
       double upperBound = child!.size.width;
 
       while (upperBound - lowerBound > threshold) {
-        final newWidth = (lowerBound + upperBound) / 2;
+        final newWidth = lerpDouble(lowerBound, upperBound, 0.75)!;
         child!.layout(BoxConstraints(maxWidth: newWidth), parentUsesSize: true);
+
         final currentRatio = child!.size.aspectRatio;
         if (currentRatio < idealRatio) {
           lowerBound = newWidth;
