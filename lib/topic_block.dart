@@ -1,6 +1,6 @@
-import 'package:board_test/aspect_ratio_constraint_box.dart';
 import 'package:board_test/hover_indicatable.dart';
 import 'package:board_test/mind_mapping.dart';
+import 'package:board_test/sketcher_controller.dart';
 import 'package:board_test/topic.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -55,6 +55,7 @@ class _TopicBlockState extends State<TopicBlock> {
         onDoubleTap: () {
           _focusNode.requestFocus();
         },
+        onPanUpdate: (details) => context.read<SketcherController>().boardDragHandle(details.delta, context),
         child: HoverIndicatable(
           isSelected: isSelected,
           onTap: () {
@@ -63,24 +64,30 @@ class _TopicBlockState extends State<TopicBlock> {
           child: child,
         ),
       ),
-      child: AspectRatioConstraintBox(
-        idealRatio: 4,
-        threshold: 2,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(color: Colors.yellow, borderRadius: BorderRadius.circular(5)),
         child: ValueListenableBuilder(
           valueListenable: ignorePointer,
           builder: (context, value, child) => IgnorePointer(
             ignoring: value,
             child: child,
           ),
-          child: TextField(
-            focusNode: _focusNode,
-            style: const TextStyle(fontSize: 32),
-            maxLines: null,
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              isCollapsed: true,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: IntrinsicWidth(
+              child: TextField(
+                textAlign: TextAlign.center,
+                focusNode: _focusNode,
+                style: const TextStyle(fontSize: 16),
+                maxLines: null,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isCollapsed: true,
+                ),
+                controller: _text,
+              ),
             ),
-            controller: _text,
           ),
         ),
       ),

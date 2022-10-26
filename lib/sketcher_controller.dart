@@ -141,11 +141,12 @@ class SketcherController extends ChangeNotifier {
   }
 
   Offset _calculateDragTarget(Size constraints, Offset dragDelta) {
+    final fixedDragDelta = dragDelta * scale;
     var targetX = _dragOffset.dx;
     var targetY = _dragOffset.dy;
 
     if (constraints.height < _sketcherSize.height * scale) {
-      final target = _dragOffset.dy + dragDelta.dy;
+      final target = _dragOffset.dy + fixedDragDelta.dy;
       final edge = (_sketcherSize.height * scale - constraints.height) / 2;
       if (target < edge && target > -edge) {
         targetY = target;
@@ -153,7 +154,7 @@ class SketcherController extends ChangeNotifier {
     }
 
     if (constraints.width < _sketcherSize.width * scale) {
-      final target = _dragOffset.dx + dragDelta.dx;
+      final target = _dragOffset.dx + fixedDragDelta.dx;
       final edge = (_sketcherSize.width * scale - constraints.width) / 2;
       if (target < edge && target > -edge) {
         targetX = target;

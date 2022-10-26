@@ -137,7 +137,7 @@ class RenderHoverIndicatable extends RenderProxyBoxWithHitTestBehavior implement
     return super.hitTest(result, position: position) && _opaque;
   }
 
-  double padding = 10;
+  double padding = 5;
 
   @override
   void paint(PaintingContext context, Offset offset) {
@@ -154,7 +154,7 @@ class RenderHoverIndicatable extends RenderProxyBoxWithHitTestBehavior implement
               const Radius.circular(10)),
           Paint()
             ..color = color
-            ..strokeWidth = 5
+            ..strokeWidth = 3
             ..style = PaintingStyle.stroke,
         );
       }

@@ -2,8 +2,9 @@ import 'package:board_test/mind_mapping.dart';
 import 'package:board_test/sketcher.dart';
 import 'package:board_test/sketcher_scrollbar.dart';
 import 'package:board_test/sketcher_scrollbar_painter.dart';
-import 'package:board_test/sketcher_vm.dart';
+import 'package:board_test/sketcher_controller.dart';
 import 'package:board_test/sketcker_content_stack.dart';
+import 'package:board_test/topic.dart';
 import 'package:board_test/topic_block.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,8 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final controller = SketcherController();
+  final subTopic1 = Topic(content: '分支主题1');
+  final subTopic2 = Topic(content: '分支主题2');
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +66,17 @@ class _MainPageState extends State<MainPage> {
                   Align(
                     alignment: Alignment.center,
                     child: TopicBlock(topic: context.read<MindMapping>().mainTopic),
-                  )
+                  ),
+                  Positioned(
+                    top: 400,
+                    left: 800,
+                    child: TopicBlock(topic: subTopic1),
+                  ),
+                  Positioned(
+                    top: 600,
+                    left: 800,
+                    child: TopicBlock(topic: subTopic2),
+                  ),
                 ],
               );
             },

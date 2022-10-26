@@ -1,6 +1,4 @@
-import 'package:board_test/drawable.dart';
-
-class Topic extends BlockDrawable {
+class Topic {
   Topic({
     this.content = '',
     this.isMain = false,
@@ -8,10 +6,4 @@ class Topic extends BlockDrawable {
 
   String content;
   bool isMain;
-
-  @override
-  void draw() {
-    super.draw();
-    print(1);
-  }
 }
