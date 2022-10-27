@@ -1,21 +1,7 @@
-import 'package:board_test/sketcher_scrollbar.dart';
-import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-class SketcherPositionMetrics {
-  SketcherPositionMetrics(
-    this.viewportDimension,
-    this.sketcherSizeWithScale,
-    this.dragOffset,
-  );
-
-  double viewportDimension;
-  double sketcherSizeWithScale;
-  double dragOffset;
-}
 
 class SketcherController extends ChangeNotifier {
   int _scale = 100;
@@ -47,15 +33,13 @@ class SketcherController extends ChangeNotifier {
 
     _lastViewportDimension = value;
 
-    dragOffset = dragOffset.translate(value.width > sketcherSizeWithScale.width ? -dragOffset.dx : 0,
-        value.height > sketcherSizeWithScale.height ? -dragOffset.dy : 0);
-
-    dispatch(context);
+    draggedOffset = draggedOffset.translate(value.width > sketcherSizeWithScale.width ? -draggedOffset.dx : 0,
+        value.height > sketcherSizeWithScale.height ? -draggedOffset.dy : 0);
   }
 
   Offset _dragOffset = Offset.zero;
-  Offset get dragOffset => _dragOffset;
-  set dragOffset(Offset value) {
+  Offset get draggedOffset => _dragOffset;
+  set draggedOffset(Offset value) {
     if (value == _dragOffset) {
       return;
     }
@@ -77,7 +61,6 @@ class SketcherController extends ChangeNotifier {
 
     if (target != _dragOffset) {
       _dragOffset = target;
-      dispatch(context);
       notifyListeners();
     }
   }
@@ -87,7 +70,6 @@ class SketcherController extends ChangeNotifier {
       final normalScaleDragOffset = _dragOffset / scale;
       _scale += 20;
       _dragOffset = normalScaleDragOffset * scale;
-      dispatch(context);
       notifyListeners();
     }
   }
@@ -97,27 +79,9 @@ class SketcherController extends ChangeNotifier {
       final normalScaleDragOffset = _dragOffset / scale;
       _scale -= 20;
       _dragOffset = _calculateReduceScaleDragOffsetTarget(normalScaleDragOffset, viewportDimension);
-      dispatch(context);
       notifyListeners();
     }
   }
-
-  void dispatch(BuildContext context) {
-    SketcherVMetricsNotification(
-            SketcherPositionMetrics(viewportDimension.height, sketcherSizeWithScale.height, _dragOffset.dy))
-        .dispatch(context);
-    SketcherHMetricsNotification(
-            SketcherPositionMetrics(viewportDimension.width, sketcherSizeWithScale.width, _dragOffset.dx))
-        .dispatch(context);
-  }
-
-  SketcherMetricsNotification createNotification(
-          SketcherScrollAxis scrollAxis) =>
-      scrollAxis == SketcherScrollAxis.vertical
-          ? SketcherVMetricsNotification(
-              SketcherPositionMetrics(viewportDimension.height, sketcherSizeWithScale.height, _dragOffset.dy))
-          : SketcherHMetricsNotification(
-              SketcherPositionMetrics(viewportDimension.width, sketcherSizeWithScale.width * scale, _dragOffset.dx));
 
   Offset _calculateReduceScaleDragOffsetTarget(Offset normalScaleDragOffset, Size constraints) {
     var dx = normalScaleDragOffset.dx * scale;

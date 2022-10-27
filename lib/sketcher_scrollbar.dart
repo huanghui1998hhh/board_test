@@ -97,6 +97,7 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
     sketcherScrollbarPainter = SketcherScrollbarPainter(
       color: widget.thumbColor ?? const Color(0x66BCBCBC),
       fadeoutOpacityAnimation: _fadeoutOpacityAnimation,
+      sketcherController: widget.controller,
       thickness: widget.thickness ?? _kScrollbarThickness,
       radius: widget.radius,
       trackRadius: widget.trackRadius,
@@ -105,6 +106,13 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
       scrollAxis: widget.scrollAxis,
       margin: widget.margin,
     );
+
+    if (showScrollbar) {
+      if (_fadeoutAnimationController.status != AnimationStatus.forward &&
+          _fadeoutAnimationController.status != AnimationStatus.completed) {
+        _fadeoutAnimationController.forward();
+      }
+    }
   }
 
   @override
@@ -172,16 +180,14 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
 
     final double scrollOffsetLocal = sketcherScrollbarPainter.getTrackToScroll(primaryDelta);
     final double scrollOffsetGlobal = isVertical
-        ? clampDouble(scrollOffsetLocal + widget.controller.dragOffset.dy, -widget.controller.lowerBoundY,
+        ? clampDouble(scrollOffsetLocal + widget.controller.draggedOffset.dy, -widget.controller.lowerBoundY,
             widget.controller.lowerBoundY)
-        : clampDouble(scrollOffsetLocal + widget.controller.dragOffset.dx, -widget.controller.lowerBoundX,
+        : clampDouble(scrollOffsetLocal + widget.controller.draggedOffset.dx, -widget.controller.lowerBoundX,
             widget.controller.lowerBoundX);
 
-    sketcherScrollbarPainter.metricsDragOffset = scrollOffsetGlobal;
-
-    widget.controller.dragOffset = isVertical
-        ? Offset(widget.controller.dragOffset.dx, scrollOffsetGlobal)
-        : Offset(scrollOffsetGlobal, widget.controller.dragOffset.dy);
+    widget.controller.draggedOffset = isVertical
+        ? Offset(widget.controller.draggedOffset.dx, scrollOffsetGlobal)
+        : Offset(scrollOffsetGlobal, widget.controller.draggedOffset.dy);
   }
 
   void _maybeStartFadeoutTimer() {
@@ -224,27 +230,12 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
 
   void _handleTrackTapDown(TapDownDetails details) {
     final double tapResultOffset = sketcherScrollbarPainter.jumpTo(details.localPosition);
-    widget.controller.dragOffset = isVertical
-        ? Offset(widget.controller.dragOffset.dx, tapResultOffset)
-        : Offset(tapResultOffset, widget.controller.dragOffset.dy);
+    widget.controller.draggedOffset = isVertical
+        ? Offset(widget.controller.draggedOffset.dx, tapResultOffset)
+        : Offset(tapResultOffset, widget.controller.draggedOffset.dy);
   }
 
   bool get isVertical => widget.scrollAxis == SketcherScrollAxis.vertical;
-
-  bool _handleScrollMetricsNotification(SketcherMetricsNotification notification) {
-    if (showScrollbar) {
-      if (_fadeoutAnimationController.status != AnimationStatus.forward &&
-          _fadeoutAnimationController.status != AnimationStatus.completed) {
-        _fadeoutAnimationController.forward();
-      }
-    }
-
-    final SketcherPositionMetrics metrics = notification.metrics;
-
-    sketcherScrollbarPainter.update(metrics, widget.scrollAxis);
-
-    return false;
-  }
 
   Map<Type, GestureRecognizerFactory> get _gestures {
     final Map<Type, GestureRecognizerFactory> gestures = <Type, GestureRecognizerFactory>{};
@@ -341,7 +332,7 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
   Widget build(BuildContext context) {
     updateScrollbarPainter();
 
-    Widget child = RepaintBoundary(
+    return RepaintBoundary(
       child: RawGestureDetector(
         gestures: _gestures,
         child: MouseRegion(
@@ -383,20 +374,6 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
         ),
       ),
     );
-
-    if (isVertical) {
-      child = NotificationListener<SketcherVMetricsNotification>(
-        onNotification: _handleScrollMetricsNotification,
-        child: child,
-      );
-    } else {
-      child = NotificationListener<SketcherHMetricsNotification>(
-        onNotification: _handleScrollMetricsNotification,
-        child: child,
-      );
-    }
-
-    return child;
   }
 }
 
@@ -462,18 +439,4 @@ class _TrackTapGestureRecognizer extends TapGestureRecognizer {
 Offset _getLocalOffset(GlobalKey scrollbarPainterKey, Offset position) {
   final RenderBox renderBox = scrollbarPainterKey.currentContext!.findRenderObject()! as RenderBox;
   return renderBox.globalToLocal(position);
-}
-
-class SketcherHMetricsNotification extends SketcherMetricsNotification {
-  SketcherHMetricsNotification(super.metrics);
-}
-
-class SketcherVMetricsNotification extends SketcherMetricsNotification {
-  SketcherVMetricsNotification(super.metrics);
-}
-
-abstract class SketcherMetricsNotification extends Notification {
-  SketcherMetricsNotification(this.metrics);
-
-  final SketcherPositionMetrics metrics;
 }

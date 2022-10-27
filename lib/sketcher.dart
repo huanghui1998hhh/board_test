@@ -42,7 +42,7 @@ class _SketcherState extends State<Sketcher> {
                     child: UnconstrainedBox(
                       alignment: Alignment.center,
                       child: Selector<SketcherController, Offset>(
-                        selector: (_, sketcherVM) => sketcherVM.dragOffset,
+                        selector: (_, sketcherVM) => sketcherVM.draggedOffset,
                         builder: (_, dragOffset, child) => Transform.translate(
                           offset: dragOffset,
                           child: child,
