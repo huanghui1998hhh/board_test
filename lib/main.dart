@@ -63,20 +63,9 @@ class _MainPageState extends State<MainPage> {
             builder: (context) {
               return SketcherContnetStack(
                 children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: TopicBlock(topic: context.read<MindMapping>().mainTopic),
-                  ),
-                  Positioned(
-                    top: 400,
-                    left: 800,
-                    child: TopicBlock(topic: subTopic1),
-                  ),
-                  Positioned(
-                    top: 600,
-                    left: 800,
-                    child: TopicBlock(topic: subTopic2),
-                  ),
+                  TopicBlock(topic: context.read<MindMapping>().mainTopic),
+                  TopicBlock(topic: subTopic1),
+                  TopicBlock(topic: subTopic2),
                 ],
               );
             },

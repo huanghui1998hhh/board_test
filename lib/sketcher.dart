@@ -36,49 +36,37 @@ class _SketcherState extends State<Sketcher> {
             child: Container(
               color: Colors.grey,
               child: Stack(
+                fit: StackFit.passthrough,
+                clipBehavior: Clip.none,
                 children: [
                   Align(
                     alignment: Alignment.center,
-                    child: UnconstrainedBox(
-                      alignment: Alignment.center,
-                      child: Selector<SketcherController, Offset>(
-                        selector: (_, sketcherVM) => sketcherVM.draggedOffset,
-                        builder: (_, dragOffset, child) => Transform.translate(
-                          offset: dragOffset,
-                          child: child,
-                        ),
-                        child: Selector<SketcherController, double>(
-                          selector: (_, sketcherVM) => sketcherVM.scale,
-                          builder: (_, scale, child) => Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Selector<SketcherController, Size>(
-                                selector: (_, sketcherVM) => sketcherVM.sketcherSize,
-                                builder: (_, size, child) => GestureDetector(
-                                  onTap: widget.onTapSpace,
-                                  child: Container(
-                                    height: size.height * scale,
-                                    width: size.width * scale,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              Transform.scale(
-                                scale: scale,
-                                alignment: Alignment.center,
-                                child: child,
-                              ),
-                            ],
-                          ),
-                          child: Selector<SketcherController, Size>(
-                            selector: (_, sketcherVM) => sketcherVM.sketcherSize,
-                            builder: (_, size, child) => SizedBox(
-                              height: size.height,
-                              width: size.width,
+                    child: Selector<SketcherController, Offset>(
+                      selector: (_, sketcherVM) => sketcherVM.draggedOffset,
+                      builder: (_, dragOffset, child) => Transform.translate(
+                        offset: dragOffset,
+                        child: child,
+                      ),
+                      child: Selector<SketcherController, double>(
+                        selector: (_, sketcherVM) => sketcherVM.scale,
+                        builder: (_, scale, child) => Transform.scale(
+                          scale: scale,
+                          alignment: Alignment.center,
+                          child: UnconstrainedBox(
+                            child: ColoredBox(
+                              color: Colors.white,
                               child: child,
                             ),
-                            child: widget.builder(context),
                           ),
+                        ),
+                        child: Selector<SketcherController, Size>(
+                          selector: (_, sketcherVM) => sketcherVM.sketcherSize,
+                          builder: (_, size, child) => SizedBox(
+                            height: size.height,
+                            width: size.width,
+                            child: child,
+                          ),
+                          child: widget.builder(context),
                         ),
                       ),
                     ),
