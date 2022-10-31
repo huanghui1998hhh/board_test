@@ -4,7 +4,6 @@ import 'package:board_test/sketcher_scrollbar.dart';
 import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcher_controller.dart';
 import 'package:board_test/sketcker_content_stack.dart';
-import 'package:board_test/topic.dart';
 import 'package:board_test/topic_block.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -34,8 +33,6 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final controller = SketcherController();
-  final subTopic1 = Topic(content: '分支主题1');
-  final subTopic2 = Topic(content: '分支主题2');
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +60,18 @@ class _MainPageState extends State<MainPage> {
             builder: (context) {
               return SketcherContnetStack(
                 children: [
-                  TopicBlock(topic: context.read<MindMapping>().mainTopic),
-                  TopicBlock(topic: subTopic1),
-                  TopicBlock(topic: subTopic2),
+                  TopicBlockWrap(
+                    topic: context.read<MindMapping>().mainTopic,
+                    child: TopicBlock(topic: context.read<MindMapping>().mainTopic),
+                  ),
+                  TopicBlockWrap(
+                    topic: context.read<MindMapping>().topic1,
+                    child: TopicBlock(topic: context.read<MindMapping>().topic1),
+                  ),
+                  TopicBlockWrap(
+                    topic: context.read<MindMapping>().topic2,
+                    child: TopicBlock(topic: context.read<MindMapping>().topic2),
+                  ),
                 ],
               );
             },

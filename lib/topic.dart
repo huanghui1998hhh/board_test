@@ -1,9 +1,17 @@
 class Topic {
-  Topic({
+  Topic.sub({
     this.content = '',
-    this.isMain = false,
-  });
+    required List<Topic> father,
+  }) : father = father.toList() {
+    for (var e in father) {
+      e.children.add(this);
+    }
+  }
+
+  Topic.main({this.content = ''}) : father = [];
 
   String content;
-  bool isMain;
+
+  List<Topic> father;
+  List<Topic> children = [];
 }

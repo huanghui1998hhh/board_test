@@ -13,5 +13,9 @@ class MindMapping extends ChangeNotifier {
     notifyListeners();
   }
 
-  Topic mainTopic = Topic(content: '中心主题');
+  Topic mainTopic = Topic.main(content: '中心主题');
+  late Topic topic1 = Topic.sub(content: '分支主题1', father: [mainTopic]);
+  late Topic topic2 = Topic.sub(content: '分支主题2', father: [mainTopic]);
+
+  late List<Topic> topics = [mainTopic, topic1, topic2];
 }

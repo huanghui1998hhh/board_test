@@ -1,4 +1,5 @@
 import 'package:board_test/sketcher_controller.dart';
+import 'package:board_test/tappable_colored_box.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -53,7 +54,7 @@ class _SketcherState extends State<Sketcher> {
                           scale: scale,
                           alignment: Alignment.center,
                           child: UnconstrainedBox(
-                            child: ColoredBox(
+                            child: TappableColoredBox(
                               color: Colors.white,
                               child: child,
                             ),

@@ -1,11 +1,18 @@
+import 'package:board_test/hover_indicatable.dart';
+import 'package:board_test/topic.dart';
+import 'package:board_test/topic_block.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+
+double _padding = 20;
 
 class SketcherContnetStack extends MultiChildRenderObjectWidget {
   SketcherContnetStack({
     super.key,
-    super.children,
-  });
+    List<TopicBlockWrap> children = const [],
+  }) : super(children: children);
 
   @override
   RenderSketcherContnetStack createRenderObject(BuildContext context) => RenderSketcherContnetStack();
@@ -13,78 +20,78 @@ class SketcherContnetStack extends MultiChildRenderObjectWidget {
 
 class RenderSketcherContnetStack extends RenderBox
     with
-        ContainerRenderObjectMixin<RenderBox, StackParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, StackParentData> {
+        ContainerRenderObjectMixin<RenderHoverIndicatable, SketcherStackParentData>,
+        RenderBoxContainerDefaultsMixin<RenderHoverIndicatable, SketcherStackParentData> {
   RenderSketcherContnetStack({
-    List<RenderBox>? children,
+    List<RenderHoverIndicatable>? children,
   }) {
     addAll(children);
   }
 
   @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! StackParentData) {
-      child.parentData = StackParentData();
-    }
+  void insert(RenderHoverIndicatable child, {RenderHoverIndicatable? after}) {
+    super.insert(child, after: after);
   }
 
-  static void layoutPositionedChild(RenderBox child, StackParentData childParentData, Size size) {
-    assert(childParentData.isPositioned);
-    assert(child.parentData == childParentData);
+  void childOnTapHandle(RenderHoverIndicatable? onTapChild) {
+    RenderHoverIndicatable? child = firstChild;
 
-    BoxConstraints childConstraints = const BoxConstraints();
-
-    if (childParentData.left != null && childParentData.right != null) {
-      childConstraints = childConstraints.tighten(width: size.width - childParentData.right! - childParentData.left!);
-    } else if (childParentData.width != null) {
-      childConstraints = childConstraints.tighten(width: childParentData.width);
+    while (child != null) {
+      child.isSelected = child == onTapChild;
+      child = (child.parentData! as SketcherStackParentData).nextSibling;
     }
-
-    if (childParentData.top != null && childParentData.bottom != null) {
-      childConstraints = childConstraints.tighten(height: size.height - childParentData.bottom! - childParentData.top!);
-    } else if (childParentData.height != null) {
-      childConstraints = childConstraints.tighten(height: childParentData.height);
-    }
-
-    child.layout(childConstraints, parentUsesSize: true);
-
-    final double x;
-    if (childParentData.left != null) {
-      x = childParentData.left!;
-    } else if (childParentData.right != null) {
-      x = size.width - childParentData.right! - child.size.width;
-    } else {
-      x = (size - child.size as Offset).dx;
-    }
-
-    final double y;
-    if (childParentData.top != null) {
-      y = childParentData.top!;
-    } else if (childParentData.bottom != null) {
-      y = size.height - childParentData.bottom! - child.size.height;
-    } else {
-      y = (size - child.size as Offset).dy;
-    }
-
-    childParentData.offset = Offset(x, y);
   }
 
   @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! SketcherStackParentData) {
+      child.parentData = SketcherStackParentData();
+    }
+  }
+
+  Set<Path> paths = {};
+
+  @override
   void performLayout() {
+    paths.clear();
     size = constraints.biggest;
 
-    RenderBox? child = firstChild;
+    final childs = getChildrenAsList();
 
-    Offset? tempOffset;
+    RenderHoverIndicatable? child =
+        childs.firstWhereOrNull((e) => (e.parentData! as SketcherStackParentData).fatherRender.isEmpty);
 
-    while (child != null) {
-      final StackParentData childParentData = child.parentData! as StackParentData;
+    if (child != null) {
+      childs.remove(child);
 
-      child.layout(constraints.loosen(), parentUsesSize: true);
-      childParentData.offset = tempOffset ??= (size / 2) - child.size as Offset;
-      tempOffset = childParentData.offset.translate(0, child.size.height + 10);
+      final SketcherStackParentData childParentData = child.parentData! as SketcherStackParentData;
 
-      child = childParentData.nextSibling;
+      layoutHepler(child, constraints);
+      childParentData.offset = (size / 2) - child.size as Offset;
+
+      double height = 0;
+
+      for (var e in childs) {
+        height += layoutHepler(e, constraints).height;
+      }
+
+      height += (childs.length - 1) * _padding;
+
+      Offset tempOffset = childParentData.offset.translate(child.size.width + 50, (child.size.height - height) / 2);
+
+      for (var e in childs) {
+        (e.parentData! as SketcherStackParentData).offset = tempOffset;
+
+        final startPoint =
+            Offset(childParentData.offset.dx + child.size.width, childParentData.offset.dy + child.size.height / 2);
+        final endPoint = Offset(tempOffset.dx, tempOffset.dy + e.size.height / 2);
+        paths.add(Path()
+          ..moveTo(startPoint.dx, startPoint.dy)
+          ..cubicTo((startPoint.dx + endPoint.dx) / 2, startPoint.dy, (startPoint.dx + endPoint.dx) / 2, endPoint.dy,
+              endPoint.dx, endPoint.dy));
+
+        tempOffset = tempOffset.translate(0, _padding + e.size.height);
+      }
     }
   }
 
@@ -96,5 +103,61 @@ class RenderSketcherContnetStack extends RenderBox
   @override
   void paint(PaintingContext context, Offset offset) {
     defaultPaint(context, offset);
+
+    context.canvas.translate(offset.dx, offset.dy);
+    for (var element in paths) {
+      context.canvas.drawPath(
+        element,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+    }
   }
+
+  static Size layoutHepler(RenderHoverIndicatable child, BoxConstraints constraints) {
+    child.layout(constraints.loosen(), parentUsesSize: true);
+    return child.size;
+  }
+}
+
+class SketcherStackParentData extends ContainerBoxParentData<RenderHoverIndicatable> {
+  Topic? topic;
+
+  List<RenderHoverIndicatable> childrenRender = [];
+  List<RenderHoverIndicatable> fatherRender = [];
+
+  bool get isTopicData => topic != null;
+}
+
+class TopicBlockWrap extends ParentDataWidget<SketcherStackParentData> {
+  const TopicBlockWrap({
+    Key? key,
+    this.topic,
+    required TopicBlock child,
+  }) : super(key: key, child: child);
+
+  final Topic? topic;
+
+  @override
+  void applyParentData(RenderObject renderObject) {
+    assert(renderObject.parentData is SketcherStackParentData);
+    final SketcherStackParentData parentData = renderObject.parentData! as SketcherStackParentData;
+    bool needsLayout = false;
+
+    if (parentData.topic != topic) {
+      parentData.topic = topic;
+      needsLayout = true;
+    }
+
+    if (needsLayout) {
+      final AbstractNode? targetParent = renderObject.parent;
+      if (targetParent is RenderObject) {
+        targetParent.markNeedsLayout();
+      }
+    }
+  }
+
+  @override
+  Type get debugTypicalAncestorWidgetClass => SketcherContnetStack;
 }
