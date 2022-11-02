@@ -53,7 +53,7 @@ class _TopicBlockState extends State<TopicBlock> {
         onDoubleTap: () {
           _focusNode.requestFocus();
         },
-        onPanUpdate: (details) => context.read<SketcherController>().boardDragHandle(details.delta, context),
+        onPanUpdate: (details) => context.read<SketcherController>().boardDragHandle(details.delta),
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(color: Colors.yellow, borderRadius: BorderRadius.circular(5)),

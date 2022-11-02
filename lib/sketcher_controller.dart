@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class SketcherController extends ChangeNotifier {
@@ -26,7 +25,7 @@ class SketcherController extends ChangeNotifier {
 
   Size? _lastViewportDimension;
   Size get viewportDimension => _lastViewportDimension!;
-  setViewportDimension(Size value, BuildContext context) {
+  set viewportDimension(Size value) {
     if (_lastViewportDimension == value) {
       return;
     }
@@ -48,15 +47,15 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void mouseRollerHandle(PointerScrollEvent event, BuildContext context) {
-    if (event.scrollDelta.dy > 0) {
-      reduceScale(context);
+  void mouseRollerHandle(Offset scrollDelta) {
+    if (scrollDelta.dy > 0) {
+      reduceScale();
     } else {
-      addScale(context);
+      addScale();
     }
   }
 
-  void boardDragHandle(Offset dragDelta, BuildContext context) {
+  void boardDragHandle(Offset dragDelta) {
     final target = _calculateDragTarget(viewportDimension, dragDelta);
 
     if (target != _dragOffset) {
@@ -65,7 +64,7 @@ class SketcherController extends ChangeNotifier {
     }
   }
 
-  void addScale(BuildContext context) {
+  void addScale() {
     if (_scale < 300) {
       final normalScaleDragOffset = _dragOffset / scale;
       _scale += 20;
@@ -74,7 +73,7 @@ class SketcherController extends ChangeNotifier {
     }
   }
 
-  void reduceScale(BuildContext context) {
+  void reduceScale() {
     if (_scale > 20) {
       final normalScaleDragOffset = _dragOffset / scale;
       _scale -= 20;

@@ -59,20 +59,16 @@ class _MainPageState extends State<MainPage> {
             },
             builder: (context) {
               return SketcherContnetStack(
-                children: [
-                  TopicBlockWrap(
-                    topic: context.read<MindMapping>().mainTopic,
-                    child: TopicBlock(topic: context.read<MindMapping>().mainTopic),
-                  ),
-                  TopicBlockWrap(
-                    topic: context.read<MindMapping>().topic1,
-                    child: TopicBlock(topic: context.read<MindMapping>().topic1),
-                  ),
-                  TopicBlockWrap(
-                    topic: context.read<MindMapping>().topic2,
-                    child: TopicBlock(topic: context.read<MindMapping>().topic2),
-                  ),
-                ],
+                children: context
+                    .read<MindMapping>()
+                    .topics
+                    .map(
+                      (e) => TopicBlockWrap(
+                        topic: e,
+                        child: TopicBlock(topic: e),
+                      ),
+                    )
+                    .toList(),
               );
             },
           ),

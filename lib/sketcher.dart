@@ -26,12 +26,12 @@ class _SketcherState extends State<Sketcher> {
       value: widget.controller,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          context.read<SketcherController>().setViewportDimension(constraints.biggest, context);
+          widget.controller.viewportDimension = constraints.biggest;
 
           return Listener(
             onPointerSignal: (event) {
               if (event is PointerScrollEvent) {
-                context.read<SketcherController>().mouseRollerHandle(event, context);
+                widget.controller.mouseRollerHandle(event.scrollDelta);
               }
             },
             child: Container(
@@ -74,20 +74,24 @@ class _SketcherState extends State<Sketcher> {
                   ),
                   Align(
                     alignment: Alignment.bottomRight,
-                    child: ButtonBar(
-                      children: [
-                        Selector<SketcherController, String>(
-                          selector: (_, sketcherVM) => sketcherVM.indicatorString,
-                          builder: (_, indicatorString, __) => Text(indicatorString),
-                        ),
-                        IconButton(
-                          onPressed: () => context.read<SketcherController>().reduceScale(context),
-                          icon: const Text('-'),
-                        ),
-                        IconButton(
-                            onPressed: () => context.read<SketcherController>().addScale(context),
-                            icon: const Text('+')),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: ButtonBar(
+                        children: [
+                          Selector<SketcherController, String>(
+                            selector: (_, sketcherVM) => sketcherVM.indicatorString,
+                            builder: (_, indicatorString, __) => Text(indicatorString),
+                          ),
+                          IconButton(
+                            onPressed: () => context.read<SketcherController>().reduceScale(),
+                            icon: const Text('-'),
+                          ),
+                          IconButton(
+                            onPressed: () => context.read<SketcherController>().addScale(),
+                            icon: const Text('+'),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 ],
