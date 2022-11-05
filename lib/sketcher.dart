@@ -67,7 +67,9 @@ class _SketcherState extends State<Sketcher> {
                             width: size.width,
                             child: child,
                           ),
-                          child: widget.builder(context),
+                          child: Center(
+                            child: widget.builder(context),
+                          ),
                         ),
                       ),
                     ),

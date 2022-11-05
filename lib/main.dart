@@ -1,10 +1,9 @@
 import 'package:board_test/mind_mapping.dart';
+import 'package:board_test/new_map_temp/new_map_temp.dart';
 import 'package:board_test/sketcher.dart';
 import 'package:board_test/sketcher_scrollbar.dart';
 import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcher_controller.dart';
-import 'package:board_test/sketcker_content_stack.dart';
-import 'package:board_test/topic_block.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -58,18 +57,7 @@ class _MainPageState extends State<MainPage> {
               context.read<MindMapping>().selectedTopic = null;
             },
             builder: (context) {
-              return SketcherContnetStack(
-                children: context
-                    .read<MindMapping>()
-                    .topics
-                    .map(
-                      (e) => TopicBlockWrap(
-                        topic: e,
-                        child: TopicBlock(topic: e),
-                      ),
-                    )
-                    .toList(),
-              );
+              return NewMapTempWidget.topic(context.read<MindMapping>().mainTopic);
             },
           ),
         ),

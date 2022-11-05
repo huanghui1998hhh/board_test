@@ -1,4 +1,3 @@
-import 'package:board_test/sketcker_content_stack.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -39,9 +38,9 @@ class _RenderTappableColoredBox extends RenderProxyBox {
 
   @override
   void handleEvent(PointerEvent event, HitTestEntry entry) {
-    if (event is PointerDownEvent) {
-      ((child as RenderProxyBox).child as RenderSketcherContnetStack).childOnTapHandle(null);
-    }
+    // if (event is PointerDownEvent) {
+    //   ((child as RenderProxyBox).child as RenderSketcherContnetStack).childOnTapHandle(null);
+    // }
   }
 
   @override

@@ -1,19 +1,10 @@
-import 'package:board_test/hover_indicatable.dart';
-
 class Topic {
-  Topic.sub({
+  Topic({
     this.content = '',
-    required Topic this.father,
-  }) {
-    father!.children.add(this);
-  }
-
-  Topic.main({this.content = ''}) : father = null;
+    List<Topic>? children,
+  }) : children = children ?? [];
 
   String content;
 
-  Topic? father;
   List<Topic> children = [];
-
-  RenderHoverIndicatable? render;
 }

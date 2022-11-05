@@ -1,4 +1,3 @@
-import 'package:board_test/sketcker_content_stack.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -79,11 +78,11 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
 
   @override
   void handleEvent(PointerEvent event, HitTestEntry entry) {
-    if (event is PointerDownEvent && !isSelected) {
-      assert(this.parent is RenderSketcherContnetStack);
-      final RenderSketcherContnetStack parent = this.parent as RenderSketcherContnetStack;
-      parent.childOnTapHandle(this);
-    }
+    // if (event is PointerDownEvent && !isSelected) {
+    //   assert(this.parent is RenderSketcherContnetStack);
+    //   final RenderSketcherContnetStack parent = this.parent as RenderSketcherContnetStack;
+    //   parent.childOnTapHandle(this);
+    // }
   }
 
   HitTestBehavior _behavior = HitTestBehavior.translucent;
