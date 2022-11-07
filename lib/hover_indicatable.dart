@@ -1,33 +1,68 @@
+import 'package:board_test/tappable_colored_box.dart';
+import 'package:board_test/topic.dart';
+import 'package:board_test/topic_block.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class HoverIndicatable extends SingleChildRenderObjectWidget {
-  const HoverIndicatable({
+  HoverIndicatable({
     super.key,
     this.cursor = MouseCursor.defer,
     this.hitTestBehavior,
     this.onTap,
-    super.child,
-  });
+    required this.topic,
+  }) : super(child: TopicBlock(topic: topic));
 
   final MouseCursor cursor;
   final HitTestBehavior? hitTestBehavior;
   final void Function(bool)? onTap;
+  final Topic topic;
 
   @override
   RenderHoverIndicatable createRenderObject(BuildContext context) => RenderHoverIndicatable(
         cursor: cursor,
         hitTestBehavior: hitTestBehavior,
         onTap: onTap,
+        topic: topic,
       );
+
+  @override
+  SingleChildRenderObjectElement createElement() => AddTopicToControlElement(this);
 
   @override
   void updateRenderObject(BuildContext context, RenderHoverIndicatable renderObject) {
     renderObject
+      ..topic = topic
       ..cursor = cursor
       ..onTap = onTap
       ..behavior = hitTestBehavior;
+  }
+}
+
+class AddTopicToControlElement extends SingleChildRenderObjectElement {
+  AddTopicToControlElement(super.widget);
+
+  RenderTappableColoredBox get boardControlRender {
+    var temp = renderObject.parent;
+
+    while (temp is! RenderTappableColoredBox) {
+      temp = temp?.parent;
+    }
+
+    return temp;
+  }
+
+  @override
+  void mount(Element? parent, Object? newSlot) {
+    super.mount(parent, newSlot);
+    boardControlRender.topics.add(renderObject as RenderHoverIndicatable);
+  }
+
+  @override
+  void unmount() {
+    boardControlRender.topics.remove(renderObject as RenderHoverIndicatable);
+    super.unmount();
   }
 }
 
@@ -37,9 +72,21 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
     bool validForMouseTracker = true,
     bool opaque = true,
     this.onTap,
+    required Topic topic,
     HitTestBehavior? hitTestBehavior = HitTestBehavior.opaque,
-  })  : _cursor = cursor,
+  })  : _topic = topic,
+        _cursor = cursor,
         _validForMouseTracker = validForMouseTracker;
+
+  Topic _topic;
+  Topic get topic => _topic;
+  set topic(Topic value) {
+    if (_topic == value) {
+      return;
+    }
+
+    _topic = value;
+  }
 
   bool _isHoverd = false;
   bool get isHoverd => _isHoverd;
@@ -78,11 +125,15 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
 
   @override
   void handleEvent(PointerEvent event, HitTestEntry entry) {
-    // if (event is PointerDownEvent && !isSelected) {
-    //   assert(this.parent is RenderSketcherContnetStack);
-    //   final RenderSketcherContnetStack parent = this.parent as RenderSketcherContnetStack;
-    //   parent.childOnTapHandle(this);
-    // }
+    if (event is PointerDownEvent && !isSelected) {
+      var temp = parent;
+
+      while (temp is! RenderTappableColoredBox) {
+        temp = temp?.parent;
+      }
+
+      temp.childOnTapHandle(this);
+    }
   }
 
   HitTestBehavior _behavior = HitTestBehavior.translucent;

@@ -1,20 +1,73 @@
 import 'dart:math';
 
+import 'package:board_test/hover_indicatable.dart';
 import 'package:board_test/topic.dart';
-import 'package:board_test/topic_block.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-class NewMapTempWidget extends MultiChildRenderObjectWidget {
-  NewMapTempWidget.topic(Topic topic, {super.key})
-      : mainChild = TopicBlock(topic: topic),
-        children = topic.children.map((e) => NewMapTempWidget.topic(e)).toList();
+class MindMap extends StatefulWidget {
+  final Topic topic;
+  const MindMap({Key? key, required this.topic}) : super(key: key);
 
-  final TopicBlock mainChild;
+  @override
+  State<MindMap> createState() => MindMapState();
+}
+
+class MindMapState extends State<MindMap> {
+  Topic? oldTopic;
+  List<Topic>? oldValue;
+  HoverIndicatable? oldWidget;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.topic.addListener(refresh);
+  }
+
+  @override
+  void dispose() {
+    widget.topic.removeListener(refresh);
+    super.dispose();
+  }
+
+  void refresh() {
+    setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(MindMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.topic != widget.topic) return;
+    oldWidget.topic.removeListener(refresh);
+    widget.topic.addListener(refresh);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (oldTopic != widget.topic) {
+      oldTopic = widget.topic;
+      oldWidget = HoverIndicatable(topic: widget.topic);
+      oldValue = widget.topic.children;
+    } else if (oldValue != widget.topic.children) {
+      oldValue = widget.topic.children;
+    }
+
+    return NewMapTempWidget(
+      mainChild: oldWidget!,
+      children: oldValue!.map((e) => MindMap(topic: e)).toList(),
+    );
+  }
+}
+
+class NewMapTempWidget extends MultiChildRenderObjectWidget {
+  NewMapTempWidget({super.key, required this.mainChild, required this.children});
+
+  final HoverIndicatable mainChild;
 
   @override
   // ignore: overridden_fields
-  final List<NewMapTempWidget> children;
+  final List<MindMap> children;
 
   @override
   MultiChildRenderObjectElement createElement() => NewMapTempWidgetElement(this);
@@ -73,6 +126,9 @@ class RenderNewMapTempWidget extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, TempParentData> {
   RenderBox? _mainTopicRender;
   RenderBox? get mainTopicRender => _mainTopicRender;
+
+  @override
+  bool get isRepaintBoundary => true;
 
   @override
   void setupParentData(RenderBox child) {
@@ -154,7 +210,21 @@ class RenderNewMapTempWidget extends RenderBox
     final TempParentData childParentData = mainTopicRender!.parentData! as TempParentData;
     context.paintChild(mainTopicRender!, childParentData.offset + offset);
 
-    defaultPaint(context, offset);
+    final mainRect = Rect.fromLTWH(childParentData.offset.dx, childParentData.offset.dy, mainTopicRender!.size.width,
+        mainTopicRender!.size.height);
+
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final TempParentData childParentData = child.parentData! as TempParentData;
+      context.paintChild(child, childParentData.offset + offset);
+      _paintMatchLing(
+        context,
+        offset,
+        mainRect,
+        Rect.fromLTWH(childParentData.offset.dx, childParentData.offset.dy, child.size.width, child.size.height),
+      );
+      child = childParentData.nextSibling;
+    }
   }
 
   @override
@@ -173,6 +243,22 @@ class RenderNewMapTempWidget extends RenderBox
     }
 
     return defaultHitTestChildren(result, position: position);
+  }
+
+  void _paintMatchLing(PaintingContext context, Offset offset, Rect a, Rect b) {
+    final startPoint = Point(a.right, a.center.dy);
+    final endPoint = Point(b.left, b.center.dy);
+
+    context.canvas.drawPath(
+      (Path()
+            ..moveTo(startPoint.x, startPoint.y)
+            ..cubicTo((startPoint.x + endPoint.x) / 2, startPoint.y, (startPoint.x + endPoint.x) / 2, endPoint.y,
+                endPoint.x, endPoint.y))
+          .shift(offset),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
   }
 }
 

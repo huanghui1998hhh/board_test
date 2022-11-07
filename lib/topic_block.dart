@@ -1,4 +1,3 @@
-import 'package:board_test/hover_indicatable.dart';
 import 'package:board_test/sketcher_controller.dart';
 import 'package:board_test/topic.dart';
 import 'package:flutter/material.dart';
@@ -19,19 +18,28 @@ class _TopicBlockState extends State<TopicBlock> {
   late final _text = TextEditingController(text: widget.topic.content);
   final _focusNode = FocusNode();
   ValueNotifier<bool> ignorePointer = ValueNotifier(true);
+  Widget? cache;
+  TopicStyle? oldStyle;
 
   @override
   void initState() {
     super.initState();
     _focusNode.addListener(ignorePointerWithoutFocus);
+    widget.topic.addListener(refresh);
+  }
+
+  void refresh() {
+    setState(() {});
   }
 
   @override
-  void didUpdateWidget(covariant TopicBlock oldWidget) {
+  void didUpdateWidget(TopicBlock oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget == widget) return;
 
     _text.text = widget.topic.content;
+    oldWidget.topic.removeListener(refresh);
+    widget.topic.addListener(refresh);
   }
 
   void ignorePointerWithoutFocus() {
@@ -41,6 +49,7 @@ class _TopicBlockState extends State<TopicBlock> {
   @override
   void dispose() {
     _focusNode.removeListener(ignorePointerWithoutFocus);
+    widget.topic.removeListener(refresh);
     _focusNode.dispose();
     _text.dispose();
     super.dispose();
@@ -48,15 +57,21 @@ class _TopicBlockState extends State<TopicBlock> {
 
   @override
   Widget build(BuildContext context) {
-    return HoverIndicatable(
-      child: GestureDetector(
+    if (oldStyle != widget.topic.style) {
+      oldStyle = widget.topic.style;
+      cache = GestureDetector(
         onDoubleTap: () {
           _focusNode.requestFocus();
         },
         onPanUpdate: (details) => context.read<SketcherController>().boardDragHandle(details.delta),
         child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: Colors.yellow, borderRadius: BorderRadius.circular(5)),
+          padding: EdgeInsets.fromLTRB(
+            oldStyle!.leftPadding,
+            oldStyle!.topPadding,
+            oldStyle!.rightPadding,
+            oldStyle!.bottomPadding,
+          ),
+          decoration: BoxDecoration(color: oldStyle!.backgroundColor, borderRadius: BorderRadius.circular(5)),
           child: ValueListenableBuilder(
             valueListenable: ignorePointer,
             builder: (context, value, child) => IgnorePointer(
@@ -69,19 +84,24 @@ class _TopicBlockState extends State<TopicBlock> {
                 child: TextField(
                   textAlign: TextAlign.center,
                   focusNode: _focusNode,
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: oldStyle!.textSize),
                   maxLines: null,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     isCollapsed: true,
                   ),
                   controller: _text,
+                  onChanged: (value) => print(3333),
+                  onEditingComplete: () => print(1111),
+                  onSubmitted: (e) => print(2222),
                 ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
+
+    return cache!;
   }
 }

@@ -1,20 +1,21 @@
+import 'package:board_test/hover_indicatable.dart';
+import 'package:board_test/mind_mapping.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 class TappableColoredBox extends SingleChildRenderObjectWidget {
-  const TappableColoredBox({required this.color, super.child, super.key});
+  final MindMapping mindMap;
+  const TappableColoredBox({required this.color, super.child, super.key, required this.mindMap});
 
   final Color color;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderTappableColoredBox(color: color);
+    return RenderTappableColoredBox(color: color, mindMap: mindMap);
   }
 
   @override
-  void updateRenderObject(BuildContext context, RenderObject renderObject) {
-    (renderObject as _RenderTappableColoredBox).color = color;
-  }
+  void updateRenderObject(BuildContext context, RenderTappableColoredBox renderObject) => renderObject..color = color;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -23,8 +24,9 @@ class TappableColoredBox extends SingleChildRenderObjectWidget {
   }
 }
 
-class _RenderTappableColoredBox extends RenderProxyBox {
-  _RenderTappableColoredBox({required Color color}) : _color = color;
+class RenderTappableColoredBox extends RenderProxyBox {
+  final MindMapping mindMap;
+  RenderTappableColoredBox({required Color color, required this.mindMap}) : _color = color;
 
   Color get color => _color;
   Color _color;
@@ -36,11 +38,21 @@ class _RenderTappableColoredBox extends RenderProxyBox {
     markNeedsPaint();
   }
 
+  final List<RenderHoverIndicatable> topics = [];
+
+  void childOnTapHandle(RenderHoverIndicatable? onTappedRender) {
+    mindMap.selectedTopic = onTappedRender?.topic;
+
+    for (var element in topics) {
+      element.isSelected = element == onTappedRender;
+    }
+  }
+
   @override
   void handleEvent(PointerEvent event, HitTestEntry entry) {
-    // if (event is PointerDownEvent) {
-    //   ((child as RenderProxyBox).child as RenderSketcherContnetStack).childOnTapHandle(null);
-    // }
+    if (event is PointerDownEvent) {
+      childOnTapHandle(null);
+    }
   }
 
   @override

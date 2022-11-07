@@ -1,3 +1,4 @@
+import 'package:board_test/mind_mapping.dart';
 import 'package:board_test/sketcher_controller.dart';
 import 'package:board_test/tappable_colored_box.dart';
 import 'package:flutter/gestures.dart';
@@ -5,13 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Sketcher extends StatefulWidget {
-  final WidgetBuilder builder;
+  final Widget child;
   final SketcherController controller;
   final VoidCallback onTapSpace;
   const Sketcher({
     Key? key,
     required this.controller,
-    required this.builder,
+    required this.child,
     required this.onTapSpace,
   }) : super(key: key);
 
@@ -20,6 +21,8 @@ class Sketcher extends StatefulWidget {
 }
 
 class _SketcherState extends State<Sketcher> {
+  Widget? cache;
+
   @override
   Widget build(BuildContext context) {
     return ListenableProvider.value(
@@ -28,7 +31,7 @@ class _SketcherState extends State<Sketcher> {
         builder: (context, constraints) {
           widget.controller.viewportDimension = constraints.biggest;
 
-          return Listener(
+          return cache ??= Listener(
             onPointerSignal: (event) {
               if (event is PointerScrollEvent) {
                 widget.controller.mouseRollerHandle(event.scrollDelta);
@@ -56,6 +59,7 @@ class _SketcherState extends State<Sketcher> {
                           child: UnconstrainedBox(
                             child: TappableColoredBox(
                               color: Colors.white,
+                              mindMap: context.read<MindMapping>(),
                               child: child,
                             ),
                           ),
@@ -68,7 +72,7 @@ class _SketcherState extends State<Sketcher> {
                             child: child,
                           ),
                           child: Center(
-                            child: widget.builder(context),
+                            child: widget.child,
                           ),
                         ),
                       ),
@@ -91,6 +95,10 @@ class _SketcherState extends State<Sketcher> {
                           IconButton(
                             onPressed: () => context.read<SketcherController>().addScale(),
                             icon: const Text('+'),
+                          ),
+                          IconButton(
+                            onPressed: () => context.read<MindMapping>().selectedTopic?.addSubTopic(),
+                            icon: const Text('+++'),
                           ),
                         ],
                       ),
