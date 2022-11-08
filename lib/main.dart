@@ -35,6 +35,12 @@ class _MainPageState extends State<MainPage> {
   final controller = SketcherController();
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => MindMapping(),

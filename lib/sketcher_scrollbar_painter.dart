@@ -381,6 +381,10 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
   }
 
   bool hitTestOnlyThumbInteractive(Offset position, PointerDeviceKind kind) {
+    if (_mainAxitSketcherSizeWithScale < _viewportDimension) {
+      return false;
+    }
+
     if (_thumbRect == null) {
       return false;
     }
@@ -409,6 +413,10 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
 
   @override
   bool? hitTest(Offset? position) {
+    if (_mainAxitSketcherSizeWithScale < _viewportDimension) {
+      return null;
+    }
+
     if (_thumbRect == null) {
       return null;
     }

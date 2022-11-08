@@ -1,6 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SketcherController extends ChangeNotifier {
   int _scale = 100;
@@ -48,10 +50,31 @@ class SketcherController extends ChangeNotifier {
   }
 
   void mouseRollerHandle(Offset scrollDelta) {
-    if (scrollDelta.dy > 0) {
-      reduceScale();
+    final temp = RawKeyboard.instance.keysPressed.lastWhereOrNull((e) =>
+        e == LogicalKeyboardKey.controlLeft ||
+        e == LogicalKeyboardKey.shiftLeft ||
+        e == LogicalKeyboardKey.controlRight ||
+        e == LogicalKeyboardKey.shiftRight);
+
+    if (temp == null) {
+      if (sketcherSizeWithScale.height > viewportDimension.height) {
+        final edgeY = (sketcherSizeWithScale.height - viewportDimension.height) / 2;
+        final newY = clampDouble(draggedOffset.dy + scrollDelta.dy, -edgeY, edgeY);
+        draggedOffset = Offset(draggedOffset.dx, newY);
+      }
+    } else if (temp == LogicalKeyboardKey.shiftLeft || temp == LogicalKeyboardKey.shiftRight) {
+      if (sketcherSizeWithScale.width > viewportDimension.width) {
+        final edgeX = (sketcherSizeWithScale.width - viewportDimension.width) / 2;
+        final newX = clampDouble(draggedOffset.dx + scrollDelta.dy, -edgeX, edgeX);
+        draggedOffset = Offset(newX, draggedOffset.dy);
+      }
+      if (sketcherSizeWithScale.width > viewportDimension.width) {}
     } else {
-      addScale();
+      if (scrollDelta.dy > 0) {
+        reduceScale();
+      } else {
+        addScale();
+      }
     }
   }
 

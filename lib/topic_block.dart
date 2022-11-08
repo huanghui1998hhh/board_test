@@ -16,7 +16,7 @@ class TopicBlock extends StatefulWidget {
 
 class _TopicBlockState extends State<TopicBlock> {
   late final _text = TextEditingController(text: widget.topic.content);
-  final _focusNode = FocusNode();
+  final _focusNode = FocusNode(skipTraversal: true);
   ValueNotifier<bool> ignorePointer = ValueNotifier(true);
   Widget? cache;
   TopicStyle? oldStyle;
