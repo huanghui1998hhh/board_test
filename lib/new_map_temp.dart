@@ -17,6 +17,7 @@ class MindMap extends StatefulWidget {
 class MindMapState extends State<MindMap> {
   Topic? oldTopic;
   List<Topic>? oldValue;
+  TopicLayout? oldLayout;
   HoverIndicatable? oldWidget;
 
   @override
@@ -49,21 +50,35 @@ class MindMapState extends State<MindMap> {
       oldTopic = widget.topic;
       oldWidget = HoverIndicatable(topic: widget.topic);
       oldValue = widget.topic.children;
-    } else if (oldValue != widget.topic.children) {
-      oldValue = widget.topic.children;
+      oldLayout = widget.topic.layout;
+    } else {
+      if (oldValue != widget.topic.children) {
+        oldValue = widget.topic.children;
+      }
+      if (oldLayout != widget.topic.layout) {
+        oldLayout = widget.topic.layout;
+      }
     }
 
     return NewMapTempWidget(
       mainChild: oldWidget!,
+      topicLayout: oldLayout!,
       children: oldValue!.map((e) => MindMap(topic: e)).toList(),
     );
   }
 }
 
 class NewMapTempWidget extends MultiChildRenderObjectWidget {
-  NewMapTempWidget({super.key, required this.mainChild, required this.children});
+  NewMapTempWidget({
+    super.key,
+    required this.mainChild,
+    required this.topicLayout,
+    required this.children,
+  });
 
   final HoverIndicatable mainChild;
+
+  final TopicLayout topicLayout;
 
   @override
   // ignore: overridden_fields
@@ -73,7 +88,13 @@ class NewMapTempWidget extends MultiChildRenderObjectWidget {
   MultiChildRenderObjectElement createElement() => NewMapTempWidgetElement(this);
 
   @override
-  RenderNewMapTempWidget createRenderObject(BuildContext context) => RenderNewMapTempWidget();
+  RenderNewMapTempWidget createRenderObject(BuildContext context) => RenderNewMapTempWidget(
+        topicLayout: topicLayout,
+      );
+
+  @override
+  void updateRenderObject(BuildContext context, RenderNewMapTempWidget renderObject) =>
+      renderObject..topicLayout = topicLayout;
 }
 
 class NewMapTempWidgetElement extends MultiChildRenderObjectElement {
@@ -124,8 +145,17 @@ class RenderNewMapTempWidget extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, TempParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, TempParentData> {
+  RenderNewMapTempWidget({required TopicLayout topicLayout}) : _topicLayout = topicLayout;
+
   RenderBox? _mainTopicRender;
   RenderBox? get mainTopicRender => _mainTopicRender;
+
+  TopicLayout _topicLayout;
+  TopicLayout get topicLayout => _topicLayout;
+  set topicLayout(TopicLayout value) {
+    _topicLayout = value;
+    markNeedsLayout();
+  }
 
   @override
   bool get isRepaintBoundary => true;
@@ -192,6 +222,7 @@ class RenderNewMapTempWidget extends RenderBox
       child.layout(constraints.loosen(), parentUsesSize: true);
       final parent = child.parentData! as TempParentData;
       parent.offset = tempOffset;
+
       widthTemp = max(widthTemp, child.size.width);
       tempOffset = tempOffset.translate(0, child.size.height + 20);
       child = parent.nextSibling;
@@ -206,26 +237,8 @@ class RenderNewMapTempWidget extends RenderBox
   }
 
   @override
-  void paint(PaintingContext context, Offset offset) {
-    final TempParentData childParentData = mainTopicRender!.parentData! as TempParentData;
-    context.paintChild(mainTopicRender!, childParentData.offset + offset);
-
-    final mainRect = Rect.fromLTWH(childParentData.offset.dx, childParentData.offset.dy, mainTopicRender!.size.width,
-        mainTopicRender!.size.height);
-
-    RenderBox? child = firstChild;
-    while (child != null) {
-      final TempParentData childParentData = child.parentData! as TempParentData;
-      context.paintChild(child, childParentData.offset + offset);
-      _paintMatchLing(
-        context,
-        offset,
-        mainRect,
-        Rect.fromLTWH(childParentData.offset.dx, childParentData.offset.dy, child.size.width, child.size.height),
-      );
-      child = childParentData.nextSibling;
-    }
-  }
+  void paint(PaintingContext context, Offset offset) =>
+      topicLayout.topicPaintHandle(context, offset, mainTopicRender!, firstChild);
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
@@ -244,22 +257,8 @@ class RenderNewMapTempWidget extends RenderBox
 
     return defaultHitTestChildren(result, position: position);
   }
-
-  void _paintMatchLing(PaintingContext context, Offset offset, Rect a, Rect b) {
-    final startPoint = Point(a.right, a.center.dy);
-    final endPoint = Point(b.left, b.center.dy);
-
-    context.canvas.drawPath(
-      (Path()
-            ..moveTo(startPoint.x, startPoint.y)
-            ..cubicTo((startPoint.x + endPoint.x) / 2, startPoint.y, (startPoint.x + endPoint.x) / 2, endPoint.y,
-                endPoint.x, endPoint.y))
-          .shift(offset),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
-  }
 }
 
-class TempParentData extends ContainerBoxParentData<RenderBox> {}
+class TempParentData extends ContainerBoxParentData<RenderBox> {
+  Rect? mainTopicRect;
+}

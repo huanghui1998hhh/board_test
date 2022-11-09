@@ -13,11 +13,6 @@ class MindMapping extends ChangeNotifier {
     notifyListeners();
   }
 
-  set selectedTopicStyle(TopicStyle style) {
-    selectedTopic?.style = style;
-    notifyListeners();
-  }
-
   Topic mainTopic = Topic(content: '中心主题', children: [
     Topic(content: '分支主题1', children: [
       Topic(content: '分支1的分支主题1'),

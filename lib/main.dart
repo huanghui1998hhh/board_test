@@ -5,6 +5,8 @@ import 'package:board_test/sketcher_scrollbar.dart';
 import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcher_controller.dart';
 import 'package:board_test/topic.dart';
+import 'package:board_test/topic_setting_block/double_setting_block.dart';
+import 'package:board_test/topic_setting_block/dropdown_button_setting_block.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -79,19 +81,23 @@ class _MainPageState extends State<MainPage> {
                 selector: (_, mindMapping) => mindMapping.selectedTopic,
                 builder: (context, selectedTopic, child) {
                   if (selectedTopic == null) {
-                    return const SizedBox();
+                    return const Center(child: Text('no selected'));
                   }
+
                   return ListView(
                     children: [
-                      Selector<MindMapping, double>(
-                        selector: (_, mindMapping) => mindMapping.selectedTopic!.style.textSize,
-                        builder: (context, textSize, child) => Slider(
-                          value: textSize,
-                          min: 5,
-                          max: 96,
-                          onChanged: (value) => context.read<MindMapping>().selectedTopicStyle =
-                              context.read<MindMapping>().selectedTopic!.style.copyWith(textSize: value),
-                        ),
+                      DoubleSettingBlock(
+                        value: selectedTopic.style.textSize,
+                        onChange: (value) {
+                          selectedTopic.style = selectedTopic.style.copyWith(textSize: value);
+                        },
+                      ),
+                      DropdownButtonSettingBlock(
+                        value: selectedTopic.layout,
+                        onChange: (value) {
+                          selectedTopic.layout = value;
+                        },
+                        values: TopicLayout.values,
                       ),
                     ],
                   );
