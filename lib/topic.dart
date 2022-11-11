@@ -7,12 +7,18 @@ class Topic extends ChangeNotifier {
   Topic({
     this.content = '',
     List<Topic>? children,
+    this.father,
     TopicStyle? style,
   })  : children = children ?? [],
-        _style = style ?? const TopicStyle();
+        _style = style ?? const TopicStyle() {
+    for (var element in this.children) {
+      element.father = this;
+    }
+  }
 
   String content;
 
+  Topic? father;
   List<Topic> children = [];
 
   TopicLayout _layout = TopicLayout.straightTree;
@@ -34,7 +40,7 @@ class Topic extends ChangeNotifier {
   }
 
   void addSubTopic() {
-    children.add(Topic());
+    children = children.toList()..add(Topic()..father = this);
     notifyListeners();
   }
 
@@ -43,6 +49,10 @@ class Topic extends ChangeNotifier {
     for (var element in children) {
       element.dispose();
     }
+    assert(father!.children.remove(this));
+    father!.children = father!.children.toList();
+    father!.notifyListeners();
+    father = null;
     super.dispose();
   }
 }
@@ -59,7 +69,7 @@ enum TopicLayout {
 
   static void straightTreePaint(
       PaintingContext context, Offset offset, RenderBox mainTopicRender, RenderBox? firstChild) {
-    final mainRect = paintChildrenUseTreeH(context, offset, mainTopicRender, firstChild);
+    final mainRect = getMainRect(mainTopicRender);
 
     RenderBox? child = firstChild;
     if (child != null) {
@@ -91,9 +101,17 @@ enum TopicLayout {
           ..strokeWidth = 2,
       );
     }
+
+    paintChildrenUseTreeH(context, offset, mainTopicRender, firstChild);
   }
 
-  static Rect paintChildrenUseTreeH(
+  static Rect getMainRect(RenderBox mainTopicRender) {
+    final TempParentData childParentData = mainTopicRender.parentData! as TempParentData;
+    return Rect.fromLTWH(
+        childParentData.offset.dx, childParentData.offset.dy, mainTopicRender.size.width, mainTopicRender.size.height);
+  }
+
+  static void paintChildrenUseTreeH(
       PaintingContext context, Offset offset, RenderBox mainTopicRender, RenderBox? firstChild) {
     final TempParentData childParentData = mainTopicRender.parentData! as TempParentData;
     context.paintChild(mainTopicRender, childParentData.offset + offset);
@@ -105,13 +123,10 @@ enum TopicLayout {
 
       child = childParentData.nextSibling;
     }
-
-    return Rect.fromLTWH(
-        childParentData.offset.dx, childParentData.offset.dy, mainTopicRender.size.width, mainTopicRender.size.height);
   }
 
   static void treePaint(PaintingContext context, Offset offset, RenderBox mainTopicRender, RenderBox? firstChild) {
-    final mainRect = paintChildrenUseTreeH(context, offset, mainTopicRender, firstChild);
+    final mainRect = getMainRect(mainTopicRender);
 
     RenderBox? child = firstChild;
     while (child != null) {
@@ -137,6 +152,8 @@ enum TopicLayout {
       );
       child = childParentData.nextSibling;
     }
+
+    paintChildrenUseTreeH(context, offset, mainTopicRender, firstChild);
   }
 }
 

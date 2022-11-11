@@ -13,6 +13,15 @@ class MindMapping extends ChangeNotifier {
     notifyListeners();
   }
 
+  final LayerLink layerLink = LayerLink();
+
+  void deleteSelected() {
+    if (selectedTopic == null) return;
+    selectedTopic!.dispose();
+    _selectedTopic = null;
+    notifyListeners();
+  }
+
   Topic mainTopic = Topic(content: '中心主题', children: [
     Topic(content: '分支主题1', children: [
       Topic(content: '分支1的分支主题1'),

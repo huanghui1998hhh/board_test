@@ -43,25 +43,25 @@ class HoverIndicatable extends SingleChildRenderObjectWidget {
 class AddTopicToControlElement extends SingleChildRenderObjectElement {
   AddTopicToControlElement(super.widget);
 
-  RenderTappableColoredBox get boardControlRender {
-    var temp = renderObject.parent;
-
-    while (temp is! RenderTappableColoredBox) {
-      temp = temp?.parent;
-    }
-
-    return temp;
-  }
+  RenderTappableColoredBox? _controlRender;
 
   @override
   void mount(Element? parent, Object? newSlot) {
     super.mount(parent, newSlot);
-    boardControlRender.topics.add(renderObject as RenderHoverIndicatable);
+
+    var temp = renderObject.parent;
+    while (temp is! RenderTappableColoredBox) {
+      temp = temp?.parent;
+    }
+    _controlRender = temp;
+    _controlRender!.topics.add(renderObject as RenderHoverIndicatable);
   }
 
   @override
   void unmount() {
-    boardControlRender.topics.remove(renderObject as RenderHoverIndicatable);
+    _controlRender!.topics.remove(renderObject);
+    _controlRender = null;
+
     super.unmount();
   }
 }
@@ -84,7 +84,8 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
     if (_topic == value) {
       return;
     }
-
+    _isSelected = false;
+    _isHoverd = false;
     _topic = value;
   }
 

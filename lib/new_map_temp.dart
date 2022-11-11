@@ -18,7 +18,7 @@ class MindMapState extends State<MindMap> {
   Topic? oldTopic;
   List<Topic>? oldValue;
   TopicLayout? oldLayout;
-  HoverIndicatable? oldWidget;
+  HoverIndicatable? oldTempWidget;
 
   @override
   void initState() {
@@ -39,8 +39,12 @@ class MindMapState extends State<MindMap> {
   @override
   void didUpdateWidget(MindMap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.topic != widget.topic) return;
+    if (oldWidget.topic == widget.topic) return;
     oldWidget.topic.removeListener(refresh);
+    oldTempWidget = null;
+    oldTopic = null;
+    oldValue = null;
+    oldLayout = null;
     widget.topic.addListener(refresh);
   }
 
@@ -48,7 +52,7 @@ class MindMapState extends State<MindMap> {
   Widget build(BuildContext context) {
     if (oldTopic != widget.topic) {
       oldTopic = widget.topic;
-      oldWidget = HoverIndicatable(topic: widget.topic);
+      oldTempWidget = HoverIndicatable(topic: widget.topic);
       oldValue = widget.topic.children;
       oldLayout = widget.topic.layout;
     } else {
@@ -61,7 +65,7 @@ class MindMapState extends State<MindMap> {
     }
 
     return NewMapTempWidget(
-      mainChild: oldWidget!,
+      mainChild: oldTempWidget!,
       topicLayout: oldLayout!,
       children: oldValue!.map((e) => MindMap(topic: e)).toList(),
     );
@@ -132,6 +136,12 @@ class NewMapTempWidgetElement extends MultiChildRenderObjectElement {
     if (_mainTopicElement != null) {
       visitor(_mainTopicElement!);
     }
+  }
+
+  @override
+  void update(NewMapTempWidget newWidget) {
+    super.update(newWidget);
+    _mainTopicElement = updateChild(_mainTopicElement, widget.mainChild, const IndexedSlot<Element?>(-1, null));
   }
 
   @override

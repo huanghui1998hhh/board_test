@@ -36,7 +36,6 @@ class _TopicBlockState extends State<TopicBlock> {
   void didUpdateWidget(TopicBlock oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget == widget) return;
-
     _text.text = widget.topic.content;
     oldWidget.topic.removeListener(refresh);
     widget.topic.addListener(refresh);
@@ -60,9 +59,7 @@ class _TopicBlockState extends State<TopicBlock> {
     if (oldStyle != widget.topic.style) {
       oldStyle = widget.topic.style;
       cache = GestureDetector(
-        onDoubleTap: () {
-          _focusNode.requestFocus();
-        },
+        onDoubleTap: _focusNode.requestFocus,
         onPanUpdate: (details) => context.read<SketcherController>().boardDragHandle(details.delta),
         child: Container(
           padding: EdgeInsets.fromLTRB(

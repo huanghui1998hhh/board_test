@@ -40,7 +40,7 @@ class _SketcherState extends State<Sketcher> {
             child: Container(
               color: Colors.grey,
               child: Stack(
-                fit: StackFit.passthrough,
+                // fit: StackFit.passthrough,
                 clipBehavior: Clip.none,
                 children: [
                   Align(
@@ -100,8 +100,22 @@ class _SketcherState extends State<Sketcher> {
                             onPressed: () => context.read<MindMapping>().selectedTopic?.addSubTopic(),
                             icon: const Text('+++'),
                           ),
+                          IconButton(
+                            onPressed: () {
+                              context.read<MindMapping>().deleteSelected();
+                            },
+                            icon: const Text('---'),
+                          ),
                         ],
                       ),
+                    ),
+                  ),
+                  CompositedTransformFollower(
+                    link: context.read<MindMapping>().layerLink,
+                    child: Container(
+                      height: 100,
+                      width: 100,
+                      color: Colors.red,
                     ),
                   )
                 ],

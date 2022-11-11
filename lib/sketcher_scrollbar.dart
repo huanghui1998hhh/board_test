@@ -115,19 +115,6 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    assert(_debugScheduleCheckHasValidScrollPosition());
-  }
-
-  bool _debugScheduleCheckHasValidScrollPosition() {
-    if (!showScrollbar) {
-      return true;
-    }
-    return true;
-  }
-
   void _validateInteractions(AnimationStatus status) {
     if (status == AnimationStatus.dismissed) {
       assert(_fadeoutOpacityAnimation.value == 0.0);
@@ -156,7 +143,6 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
     super.didUpdateWidget(oldWidget);
     if (widget.thumbVisibility != oldWidget.thumbVisibility) {
       if (widget.thumbVisibility ?? false) {
-        assert(_debugScheduleCheckHasValidScrollPosition());
         _fadeoutTimer?.cancel();
         _fadeoutAnimationController.animateTo(1.0);
       } else {

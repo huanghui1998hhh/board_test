@@ -348,6 +348,10 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
   }
 
   bool hitTestInteractive(Offset position, PointerDeviceKind kind, {bool forHover = false}) {
+    if (_mainAxitSketcherSizeWithScale < _viewportDimension) {
+      return false;
+    }
+
     if (_trackRect == null) {
       return false;
     }

@@ -21,13 +21,6 @@ class _DropdownButtonSettingBlockState<T extends Enum>
   Widget build(BuildContext context) {
     return DropdownButton<T>(
       value: stateValue,
-      icon: const Icon(Icons.arrow_downward),
-      elevation: 16,
-      style: const TextStyle(color: Colors.deepPurple),
-      underline: Container(
-        height: 2,
-        color: Colors.deepPurpleAccent,
-      ),
       onChanged: (T? value) {
         if (value == null) return;
         stateValue = value;
