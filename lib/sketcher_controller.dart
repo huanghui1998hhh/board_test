@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 class SketcherController extends ChangeNotifier {
   int _scale = 100;
@@ -18,6 +19,9 @@ class SketcherController extends ChangeNotifier {
     _sketcherSize = value;
     notifyListeners();
   }
+
+  Matrix4 get matrix4 =>
+      Matrix4.compose(Vector3(_dragOffset.dx, _dragOffset.dy, 1.0), Quaternion.identity(), Vector3(scale, scale, 1.0));
 
   double get scale => _scale / 100;
   String get indicatorString => '$_scale%';

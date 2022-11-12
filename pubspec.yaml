@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   collection: ^1.16.0
   provider: ^6.0.4
+  vector_math: ^2.1.2
 
 dev_dependencies:
   flutter_test:

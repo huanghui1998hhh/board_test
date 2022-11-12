@@ -221,7 +221,7 @@ class RenderNewMapTempWidget extends RenderBox
 
   @override
   void performLayout() {
-    _mainTopicRender!.layout(constraints.loosen(), parentUsesSize: true);
+    _mainTopicRender!.layout(const BoxConstraints(), parentUsesSize: true);
 
     RenderBox? child = firstChild;
     Offset tempOffset = Offset(_mainTopicRender!.size.width + 50, 0);
@@ -229,7 +229,7 @@ class RenderNewMapTempWidget extends RenderBox
     double widthTemp = 0;
 
     while (child != null) {
-      child.layout(constraints.loosen(), parentUsesSize: true);
+      child.layout(const BoxConstraints(), parentUsesSize: true);
       final parent = child.parentData! as TempParentData;
       parent.offset = tempOffset;
 
@@ -243,7 +243,8 @@ class RenderNewMapTempWidget extends RenderBox
     (_mainTopicRender!.parentData! as TempParentData).offset =
         Offset(0, (childrenHeight - _mainTopicRender!.size.height) / 2);
 
-    size = Size(_mainTopicRender!.size.width + 50 + widthTemp, childrenHeight);
+    // size = Size(_mainTopicRender!.size.width + 50 + widthTemp, childrenHeight);
+    size = constraints.constrain(Size(_mainTopicRender!.size.width + 50 + widthTemp, childrenHeight));
   }
 
   @override
