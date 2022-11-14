@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcher_controller.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -165,15 +164,11 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
     }
 
     final double scrollOffsetLocal = sketcherScrollbarPainter.getTrackToScroll(primaryDelta);
-    final double scrollOffsetGlobal = isVertical
-        ? clampDouble(scrollOffsetLocal + widget.controller.draggedOffset.dy, -widget.controller.lowerBoundY,
-            widget.controller.lowerBoundY)
-        : clampDouble(scrollOffsetLocal + widget.controller.draggedOffset.dx, -widget.controller.lowerBoundX,
-            widget.controller.lowerBoundX);
+    isVertical
+        ? widget.controller.offsetTranslateY = scrollOffsetLocal
+        : widget.controller.offsetTranslateX = scrollOffsetLocal;
 
-    widget.controller.draggedOffset = isVertical
-        ? Offset(widget.controller.draggedOffset.dx, scrollOffsetGlobal)
-        : Offset(scrollOffsetGlobal, widget.controller.draggedOffset.dy);
+    widget.controller.notifyListeners();
   }
 
   void _maybeStartFadeoutTimer() {
@@ -216,9 +211,9 @@ class SketcherScrollbarState<T extends SketcherScrollbar> extends State<T> with 
 
   void _handleTrackTapDown(TapDownDetails details) {
     final double tapResultOffset = sketcherScrollbarPainter.jumpTo(details.localPosition);
-    widget.controller.draggedOffset = isVertical
-        ? Offset(widget.controller.draggedOffset.dx, tapResultOffset)
-        : Offset(tapResultOffset, widget.controller.draggedOffset.dy);
+    isVertical ? widget.controller.offsetY = tapResultOffset : widget.controller.offsetX = tapResultOffset;
+
+    widget.controller.notifyListeners();
   }
 
   bool get isVertical => widget.scrollAxis == SketcherScrollAxis.vertical;

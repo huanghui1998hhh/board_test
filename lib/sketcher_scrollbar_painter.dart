@@ -291,7 +291,7 @@ class SketcherScrollbarPainter extends ChangeNotifier implements CustomPainter {
   bool get _isVertical => _scrollAxis == SketcherScrollAxis.vertical;
   double get _mainAxisPadding => _isVertical ? padding.vertical : padding.horizontal;
   double get _mainAxisMargin => _isVertical ? margin.vertical : margin.horizontal;
-  double get _draggedOffset => _isVertical ? sketcherController.draggedOffset.dy : sketcherController.draggedOffset.dx;
+  double get _draggedOffset => _isVertical ? sketcherController.offsetY : sketcherController.offsetX;
   double get _viewportDimension =>
       _isVertical ? sketcherController.viewportDimension.height : sketcherController.viewportDimension.width;
   double get _mainAxitSketcherSizeWithScale =>

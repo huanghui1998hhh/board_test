@@ -1,6 +1,6 @@
-import 'package:board_test/tappable_colored_box.dart';
 import 'package:board_test/topic.dart';
 import 'package:board_test/topic_block.dart';
+import 'package:board_test/transform_viewport.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -43,27 +43,27 @@ class HoverIndicatable extends SingleChildRenderObjectWidget {
 class AddTopicToControlElement extends SingleChildRenderObjectElement {
   AddTopicToControlElement(super.widget);
 
-  // RenderTappableColoredBox? _controlRender;
+  RenderTransformViewport? _controlRender;
 
-  // @override
-  // void mount(Element? parent, Object? newSlot) {
-  //   super.mount(parent, newSlot);
+  @override
+  void mount(Element? parent, Object? newSlot) {
+    super.mount(parent, newSlot);
 
-  //   var temp = renderObject.parent;
-  //   while (temp is! RenderTappableColoredBox) {
-  //     temp = temp?.parent;
-  //   }
-  //   _controlRender = temp;
-  //   _controlRender!.topics.add(renderObject as RenderHoverIndicatable);
-  // }
+    var temp = renderObject.parent;
+    while (temp is! RenderTransformViewport) {
+      temp = temp?.parent;
+    }
+    _controlRender = temp;
+    _controlRender!.topics.add(renderObject as RenderHoverIndicatable);
+  }
 
-  // @override
-  // void unmount() {
-  //   _controlRender!.topics.remove(renderObject);
-  //   _controlRender = null;
+  @override
+  void unmount() {
+    _controlRender!.topics.remove(renderObject);
+    _controlRender = null;
 
-  //   super.unmount();
-  // }
+    super.unmount();
+  }
 }
 
 class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnotation {
@@ -129,7 +129,7 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
     if (event is PointerDownEvent && !isSelected) {
       var temp = parent;
 
-      while (temp is! RenderTappableColoredBox) {
+      while (temp is! RenderTransformViewport) {
         temp = temp?.parent;
       }
 
