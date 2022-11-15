@@ -1,8 +1,6 @@
 import 'package:board_test/mind_mapping.dart';
 import 'package:board_test/new_map_temp.dart';
 import 'package:board_test/sketcher.dart';
-import 'package:board_test/sketcher_scrollbar.dart';
-import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcher_controller.dart';
 import 'package:board_test/topic.dart';
 import 'package:board_test/topic_setting_block/double_setting_block.dart';
@@ -50,28 +48,12 @@ class _MainPageState extends State<MainPage> {
         return Row(
           children: [
             Expanded(
-              child: SketcherScrollbar(
+              child: Sketcher(
                 controller: controller,
-                scrollAxis: SketcherScrollAxis.vertical,
-                thickness: 20,
-                thumbVisibility: true,
-                trackVisibility: true,
-                margin: const EdgeInsets.only(bottom: 20),
-                child: SketcherScrollbar(
-                  controller: controller,
-                  scrollAxis: SketcherScrollAxis.horizontal,
-                  thickness: 20,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  margin: const EdgeInsets.only(right: 20),
-                  child: Sketcher(
-                    controller: controller,
-                    onTapSpace: () {
-                      context.read<MindMapping>().selectedTopic = null;
-                    },
-                    child: MindMap(topic: context.read<MindMapping>().mainTopic),
-                  ),
-                ),
+                onTapSpace: () {
+                  context.read<MindMapping>().selectedTopic = null;
+                },
+                child: MindMap(topic: context.read<MindMapping>().mainTopic),
               ),
             ),
             Container(

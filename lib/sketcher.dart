@@ -1,6 +1,9 @@
 import 'package:board_test/mind_mapping.dart';
 import 'package:board_test/sketcher_controller.dart';
+import 'package:board_test/sketcher_scrollbar.dart';
+import 'package:board_test/sketcher_scrollbar_painter.dart';
 import 'package:board_test/sketcker_content_stack.dart';
+import 'package:board_test/topic_setting_block/value_selector.dart';
 import 'package:board_test/transform_viewport.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -8,11 +11,11 @@ import 'package:provider/provider.dart';
 
 class Sketcher extends StatefulWidget {
   final Widget child;
-  final SketcherController controller;
+  final SketcherController? controller;
   final VoidCallback onTapSpace;
   const Sketcher({
     Key? key,
-    required this.controller,
+    this.controller,
     required this.child,
     required this.onTapSpace,
   }) : super(key: key);
@@ -22,64 +25,79 @@ class Sketcher extends StatefulWidget {
 }
 
 class _SketcherState extends State<Sketcher> {
-  Widget? cache;
+  SketcherController? _controller;
+  SketcherController get _effectiveController => widget.controller ?? (_controller ??= SketcherController());
 
   @override
   Widget build(BuildContext context) {
-    return ListenableProvider.value(
-      value: widget.controller,
-      child: Listener(
-        behavior: HitTestBehavior.opaque,
-        onPointerSignal: (event) {
-          if (event is PointerScrollEvent) {
-            widget.controller.mouseRollerHandle(-event.scrollDelta);
-          }
-        },
-        child: Stack(
-          children: [
-            TransformViewport(
-              mindMap: context.read<MindMapping>(),
-              controller: widget.controller,
-              child: SketckerStack(
-                controller: widget.controller,
-                children: [
-                  widget.child,
-                ],
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: ButtonBar(
+    return SketcherScrollbar(
+      controller: _effectiveController,
+      scrollAxis: SketcherScrollAxis.vertical,
+      thickness: 20,
+      thumbVisibility: true,
+      trackVisibility: true,
+      margin: const EdgeInsets.only(bottom: 20),
+      child: SketcherScrollbar(
+        controller: _effectiveController,
+        scrollAxis: SketcherScrollAxis.horizontal,
+        thickness: 20,
+        thumbVisibility: true,
+        trackVisibility: true,
+        margin: const EdgeInsets.only(right: 20),
+        child: Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerSignal: (event) {
+            if (event is PointerScrollEvent) {
+              _effectiveController.mouseRollerHandle(-event.scrollDelta);
+            }
+          },
+          child: Stack(
+            children: [
+              TransformViewport(
+                mindMap: context.read<MindMapping>(),
+                controller: _effectiveController,
+                child: SketckerStack(
+                  controller: _effectiveController,
                   children: [
-                    Selector<SketcherController, String>(
-                      selector: (_, sketcherVM) => sketcherVM.indicatorString,
-                      builder: (_, indicatorString, __) => Text(indicatorString),
-                    ),
-                    IconButton(
-                      onPressed: () => context.read<SketcherController>().zoomOut(),
-                      icon: const Text('-'),
-                    ),
-                    IconButton(
-                      onPressed: () => context.read<SketcherController>().zoomIn(),
-                      icon: const Text('+'),
-                    ),
-                    IconButton(
-                      onPressed: () => context.read<MindMapping>().selectedTopic?.addSubTopic(),
-                      icon: const Text('+++'),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        context.read<MindMapping>().deleteSelected();
-                      },
-                      icon: const Text('---'),
-                    ),
+                    widget.child,
                   ],
                 ),
               ),
-            ),
-          ],
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: ButtonBar(
+                    children: [
+                      ValueSelector<SketcherController, String>(
+                        controller: _effectiveController,
+                        valueBuilder: (_, controller) => controller.indicatorString,
+                        builder: (_, indicatorString, __) => Text(indicatorString),
+                      ),
+                      IconButton(
+                        onPressed: () => _effectiveController.zoomOut(),
+                        icon: const Text('-'),
+                      ),
+                      IconButton(
+                        onPressed: () => _effectiveController.zoomIn(),
+                        icon: const Text('+'),
+                      ),
+                      IconButton(
+                        onPressed: () => context.read<MindMapping>().selectedTopic?.addSubTopic(),
+                        icon: const Text('+++'),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          context.read<MindMapping>().deleteSelected();
+                        },
+                        icon: const Text('---'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
