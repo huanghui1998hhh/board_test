@@ -1,4 +1,4 @@
-import 'package:board_test/sketcher_controller.dart';
+import 'package:board_test/sketcher/sketcher_controller.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 

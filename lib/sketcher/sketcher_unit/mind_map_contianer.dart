@@ -1,20 +1,20 @@
 import 'dart:math';
 
-import 'package:board_test/hover_indicatable.dart';
-import 'package:board_test/topic.dart';
+import 'package:board_test/sketcher/sketcher_unit/hover_indicatable.dart';
+import 'package:board_test/model/topic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-class MindMap extends StatefulWidget {
+class MindMapContianer extends StatefulWidget {
   final Topic topic;
-  const MindMap({Key? key, required this.topic}) : super(key: key);
+  const MindMapContianer({Key? key, required this.topic}) : super(key: key);
 
   @override
-  State<MindMap> createState() => MindMapState();
+  State<MindMapContianer> createState() => MindMapContianerState();
 }
 
-class MindMapState extends State<MindMap> {
+class MindMapContianerState extends State<MindMapContianer> {
   Topic? oldTopic;
   List<Topic>? oldValue;
   TopicLayout? oldLayout;
@@ -37,7 +37,7 @@ class MindMapState extends State<MindMap> {
   }
 
   @override
-  void didUpdateWidget(MindMap oldWidget) {
+  void didUpdateWidget(MindMapContianer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.topic == widget.topic) return;
     oldWidget.topic.removeListener(refresh);
@@ -67,7 +67,7 @@ class MindMapState extends State<MindMap> {
     return NewMapTempWidget(
       mainChild: oldTempWidget!,
       topicLayout: oldLayout!,
-      children: oldValue!.map((e) => MindMap(topic: e)).toList(),
+      children: oldValue!.map((e) => MindMapContianer(topic: e)).toList(),
     );
   }
 }
@@ -86,7 +86,7 @@ class NewMapTempWidget extends MultiChildRenderObjectWidget {
 
   @override
   // ignore: overridden_fields
-  final List<MindMap> children;
+  final List<MindMapContianer> children;
 
   @override
   MultiChildRenderObjectElement createElement() => NewMapTempWidgetElement(this);

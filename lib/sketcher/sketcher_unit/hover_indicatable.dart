@@ -1,9 +1,11 @@
-import 'package:board_test/topic.dart';
-import 'package:board_test/topic_block.dart';
-import 'package:board_test/transform_viewport.dart';
+import 'package:board_test/model/mind_mapping.dart';
+import 'package:board_test/model/topic.dart';
+import 'package:board_test/sketcher/sketcher_unit/topic_block.dart';
+import 'package:board_test/sketcher/transform_viewport.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 class HoverIndicatable extends SingleChildRenderObjectWidget {
   HoverIndicatable({
@@ -25,6 +27,7 @@ class HoverIndicatable extends SingleChildRenderObjectWidget {
         hitTestBehavior: hitTestBehavior,
         onTap: onTap,
         topic: topic,
+        link: context.read<MindMapping>().layerLink,
       );
 
   @override
@@ -70,13 +73,33 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
   RenderHoverIndicatable({
     MouseCursor cursor = MouseCursor.defer,
     bool validForMouseTracker = true,
-    bool opaque = true,
+    required LayerLink link,
     this.onTap,
     required Topic topic,
     HitTestBehavior? hitTestBehavior = HitTestBehavior.opaque,
   })  : _topic = topic,
+        _link = link,
         _cursor = cursor,
         _validForMouseTracker = validForMouseTracker;
+
+  Size? _previousLayoutSize;
+
+  LayerLink get link => _link;
+  LayerLink _link;
+  set link(LayerLink value) {
+    if (_link == value) {
+      return;
+    }
+    _link.leaderSize = null;
+    _link = value;
+    if (_previousLayoutSize != null) {
+      _link.leaderSize = _previousLayoutSize;
+    }
+    markNeedsPaint();
+  }
+
+  @override
+  bool get alwaysNeedsCompositing => _isSelected;
 
   Topic _topic;
   Topic get topic => _topic;
@@ -106,7 +129,7 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
     }
 
     _isSelected = value;
-    markNeedsPaint();
+    markNeedsLayout();
   }
 
   @override
@@ -122,6 +145,10 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
   @override
   void performLayout() {
     super.performLayout();
+    if (_isSelected) {
+      _previousLayoutSize = size;
+      link.leaderSize = size;
+    }
   }
 
   @override
@@ -188,6 +215,26 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
 
   @override
   void paint(PaintingContext context, Offset offset) {
+    if (_isSelected) {
+      if (layer == null) {
+        layer = LeaderLayer(link: link, offset: offset);
+      } else {
+        final LeaderLayer leaderLayer = layer! as LeaderLayer;
+        leaderLayer
+          ..link = link
+          ..offset = offset;
+      }
+      context.pushLayer(layer!, paintChild, Offset.zero);
+      assert(() {
+        layer!.debugCreator = debugCreator;
+        return true;
+      }());
+    } else {
+      paintChild(context, offset);
+    }
+  }
+
+  void paintChild(PaintingContext context, Offset offset) {
     if (size > Size.zero) {
       Color? color;
       if (isSelected) {

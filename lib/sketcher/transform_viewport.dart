@@ -1,6 +1,6 @@
-import 'package:board_test/hover_indicatable.dart';
-import 'package:board_test/mind_mapping.dart';
-import 'package:board_test/sketcher_controller.dart';
+import 'package:board_test/sketcher/sketcher_unit/hover_indicatable.dart';
+import 'package:board_test/model/mind_mapping.dart';
+import 'package:board_test/sketcher/sketcher_controller.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 

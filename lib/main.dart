@@ -1,8 +1,8 @@
-import 'package:board_test/mind_mapping.dart';
-import 'package:board_test/new_map_temp.dart';
-import 'package:board_test/sketcher.dart';
-import 'package:board_test/sketcher_controller.dart';
-import 'package:board_test/topic.dart';
+import 'package:board_test/model/mind_mapping.dart';
+import 'package:board_test/sketcher/sketcher_unit/mind_map_contianer.dart';
+import 'package:board_test/sketcher/sketcher.dart';
+import 'package:board_test/sketcher/sketcher_controller.dart';
+import 'package:board_test/model/topic.dart';
 import 'package:board_test/topic_setting_block/double_setting_block.dart';
 import 'package:board_test/topic_setting_block/dropdown_button_setting_block.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +53,7 @@ class _MainPageState extends State<MainPage> {
                 onTapSpace: () {
                   context.read<MindMapping>().selectedTopic = null;
                 },
-                child: MindMap(topic: context.read<MindMapping>().mainTopic),
+                child: MindMapContianer(topic: context.read<MindMapping>().mainTopic),
               ),
             ),
             Container(

@@ -1,4 +1,4 @@
-import 'package:board_test/topic.dart';
+import 'package:board_test/model/topic.dart';
 import 'package:flutter/cupertino.dart';
 
 class MindMapping extends ChangeNotifier {

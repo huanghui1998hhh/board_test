@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'dart:math' as math;
 
-import 'package:board_test/sketcher_controller.dart';
+import 'package:board_test/sketcher/sketcher_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

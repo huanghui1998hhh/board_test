@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:board_test/new_map_temp.dart';
+import 'package:board_test/sketcher/sketcher_unit/mind_map_contianer.dart';
 import 'package:flutter/material.dart';
 
 class Topic extends ChangeNotifier {

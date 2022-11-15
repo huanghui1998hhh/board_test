@@ -1,10 +1,11 @@
-import 'package:board_test/mind_mapping.dart';
-import 'package:board_test/sketcher_controller.dart';
-import 'package:board_test/sketcher_scrollbar.dart';
-import 'package:board_test/sketcher_scrollbar_painter.dart';
-import 'package:board_test/sketcker_content_stack.dart';
+import 'package:board_test/composited_scale_transform_follower/composited_scale_transform_follower.dart';
+import 'package:board_test/model/mind_mapping.dart';
+import 'package:board_test/sketcher/sketcher_controller.dart';
+import 'package:board_test/sketcher/sketcher_scrollbar/sketcher_scrollbar.dart';
+import 'package:board_test/sketcher/sketcher_scrollbar/sketcher_scrollbar_painter.dart';
+import 'package:board_test/sketcher/sketcker_content_stack.dart';
 import 'package:board_test/topic_setting_block/value_selector.dart';
-import 'package:board_test/transform_viewport.dart';
+import 'package:board_test/sketcher/transform_viewport.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -94,6 +95,19 @@ class _SketcherState extends State<Sketcher> {
                       ),
                     ],
                   ),
+                ),
+              ),
+              CompositedScaleTransformFollower(
+                link: context.read<MindMapping>().layerLink,
+                targetAnchor: Alignment.topLeft,
+                followerAnchor: Alignment.bottomLeft,
+                showWhenUnlinked: false,
+                followScaleTransform: false,
+                offset: const Offset(0, -10),
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  color: Colors.red,
                 ),
               ),
             ],

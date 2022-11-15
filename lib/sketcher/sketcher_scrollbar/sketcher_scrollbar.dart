@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:board_test/sketcher_scrollbar_painter.dart';
-import 'package:board_test/sketcher_controller.dart';
+import 'package:board_test/sketcher/sketcher_scrollbar/sketcher_scrollbar_painter.dart';
+import 'package:board_test/sketcher/sketcher_controller.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 

@@ -1,5 +1,5 @@
-import 'package:board_test/sketcher_controller.dart';
-import 'package:board_test/topic.dart';
+import 'package:board_test/sketcher/sketcher_controller.dart';
+import 'package:board_test/model/topic.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
