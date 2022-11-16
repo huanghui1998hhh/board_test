@@ -3,6 +3,7 @@ import 'package:board_test/model/mind_mapping.dart';
 import 'package:board_test/sketcher/sketcher_controller.dart';
 import 'package:board_test/sketcher/sketcher_scrollbar/sketcher_scrollbar.dart';
 import 'package:board_test/sketcher/sketcher_scrollbar/sketcher_scrollbar_painter.dart';
+import 'package:board_test/sketcher/sketcher_tool_bar/sketcher_tool_bar.dart';
 import 'package:board_test/sketcher/sketcker_content_stack.dart';
 import 'package:board_test/topic_setting_block/value_selector.dart';
 import 'package:board_test/sketcher/transform_viewport.dart';
@@ -99,16 +100,12 @@ class _SketcherState extends State<Sketcher> {
               ),
               CompositedScaleTransformFollower(
                 link: context.read<MindMapping>().layerLink,
-                targetAnchor: Alignment.topLeft,
-                followerAnchor: Alignment.bottomLeft,
+                targetAnchor: Alignment.topCenter,
+                followerAnchor: Alignment.bottomCenter,
                 showWhenUnlinked: false,
                 followScaleTransform: false,
-                offset: const Offset(0, -10),
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  color: Colors.red,
-                ),
+                offset: const Offset(0, -15),
+                child: SketcherToolBar(mindMapping: context.read<MindMapping>()),
               ),
             ],
           ),

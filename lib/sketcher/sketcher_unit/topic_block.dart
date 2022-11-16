@@ -1,7 +1,6 @@
-import 'package:board_test/sketcher/sketcher_controller.dart';
 import 'package:board_test/model/topic.dart';
+import 'package:board_test/topic_setting_block/value_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class TopicBlock extends StatefulWidget {
   final Topic topic;
@@ -18,14 +17,11 @@ class _TopicBlockState extends State<TopicBlock> {
   late final _text = TextEditingController(text: widget.topic.content);
   final _focusNode = FocusNode(skipTraversal: true);
   ValueNotifier<bool> ignorePointer = ValueNotifier(true);
-  Widget? cache;
-  TopicStyle? oldStyle;
 
   @override
   void initState() {
     super.initState();
     _focusNode.addListener(ignorePointerWithoutFocus);
-    widget.topic.addListener(refresh);
   }
 
   void refresh() {
@@ -37,8 +33,6 @@ class _TopicBlockState extends State<TopicBlock> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget == widget) return;
     _text.text = widget.topic.content;
-    oldWidget.topic.removeListener(refresh);
-    widget.topic.addListener(refresh);
   }
 
   void ignorePointerWithoutFocus() {
@@ -48,7 +42,6 @@ class _TopicBlockState extends State<TopicBlock> {
   @override
   void dispose() {
     _focusNode.removeListener(ignorePointerWithoutFocus);
-    widget.topic.removeListener(refresh);
     _focusNode.dispose();
     _text.dispose();
     super.dispose();
@@ -56,47 +49,58 @@ class _TopicBlockState extends State<TopicBlock> {
 
   @override
   Widget build(BuildContext context) {
-    if (oldStyle != widget.topic.style) {
-      oldStyle = widget.topic.style;
-      cache = GestureDetector(
-        onDoubleTap: _focusNode.requestFocus,
-        onPanUpdate: (details) => context.read<SketcherController>().boardDragHandle(details.delta),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(
-            oldStyle!.leftPadding,
-            oldStyle!.topPadding,
-            oldStyle!.rightPadding,
-            oldStyle!.bottomPadding,
-          ),
-          decoration: BoxDecoration(color: oldStyle!.backgroundColor, borderRadius: BorderRadius.circular(5)),
-          child: ValueListenableBuilder(
-            valueListenable: ignorePointer,
-            builder: (context, value, child) => IgnorePointer(
-              ignoring: value,
-              child: child,
+    return GestureDetector(
+      onDoubleTap: _focusNode.requestFocus,
+      child: ValueSelector(
+        controller: widget.topic,
+        valueBuilder: (_, controller) => controller.style.topicDecorationStyle,
+        builder: (_, value, child) {
+          return Container(
+            padding: EdgeInsets.fromLTRB(
+              value.leftPadding,
+              value.topPadding,
+              value.rightPadding,
+              value.bottomPadding,
             ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 320),
-              child: IntrinsicWidth(
-                child: TextField(
-                  textAlign: TextAlign.center,
-                  focusNode: _focusNode,
-                  style: TextStyle(fontSize: oldStyle!.textSize),
-                  maxLines: null,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isCollapsed: true,
-                  ),
-                  controller: _text,
-                  onChanged: (value) => widget.topic.content = value,
-                ),
+            decoration: BoxDecoration(color: value.backgroundColor, borderRadius: BorderRadius.circular(5)),
+            child: child,
+          );
+        },
+        child: ValueListenableBuilder(
+          valueListenable: ignorePointer,
+          builder: (context, value, child) => IgnorePointer(
+            ignoring: value,
+            child: child,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: IntrinsicWidth(
+              child: ValueSelector(
+                controller: widget.topic,
+                valueBuilder: (_, controller) => controller.style.topicTextStyle,
+                builder: (_, value, __) {
+                  return TextField(
+                    textAlign: value.textAlignment,
+                    focusNode: _focusNode,
+                    style: TextStyle(
+                      fontSize: value.textSize,
+                      fontStyle: value.isItalic ? FontStyle.italic : FontStyle.normal,
+                      fontWeight: value.isBold ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isCollapsed: true,
+                    ),
+                    controller: _text,
+                    onChanged: (value) => widget.topic.content = value,
+                  );
+                },
               ),
             ),
           ),
         ),
-      );
-    }
-
-    return cache!;
+      ),
+    );
   }
 }

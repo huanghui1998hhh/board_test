@@ -10,10 +10,31 @@ class Topic extends ChangeNotifier {
     this.father,
     TopicStyle? style,
   })  : children = children ?? [],
-        _style = style ?? const TopicStyle() {
+        _style = style ?? TopicStyle() {
     for (var element in this.children) {
       element.father = this;
     }
+  }
+
+  set isItalic(bool value) {
+    if (value == style.topicTextStyle.isItalic) return;
+
+    style.topicTextStyle = style.topicTextStyle.copyWith(isItalic: value);
+    notifyListeners();
+  }
+
+  set isBold(bool value) {
+    if (value == style.topicTextStyle.isBold) return;
+
+    style.topicTextStyle = style.topicTextStyle.copyWith(isBold: value);
+    notifyListeners();
+  }
+
+  set textAlignment(TextAlign value) {
+    if (value == style.topicTextStyle.textAlignment) return;
+
+    style.topicTextStyle = style.topicTextStyle.copyWith(textAlignment: value);
+    notifyListeners();
   }
 
   String content;
@@ -30,14 +51,8 @@ class Topic extends ChangeNotifier {
     notifyListeners();
   }
 
-  TopicStyle _style;
+  final TopicStyle _style;
   TopicStyle get style => _style;
-  set style(TopicStyle value) {
-    if (_style == value) return;
-
-    _style = value;
-    notifyListeners();
-  }
 
   void addSubTopic() {
     children = children.toList()..add(Topic()..father = this);
@@ -55,6 +70,69 @@ class Topic extends ChangeNotifier {
     father = null;
     super.dispose();
   }
+}
+
+class TopicStyle {
+  TopicDecorationStyle topicDecorationStyle = const TopicDecorationStyle();
+  TopicTextStyle topicTextStyle = const TopicTextStyle();
+}
+
+class TopicTextStyle {
+  const TopicTextStyle({
+    this.textSize = 16,
+    this.isBold = false,
+    this.isItalic = false,
+    this.textAlignment = TextAlign.center,
+  });
+
+  final double textSize;
+  final bool isItalic;
+  final bool isBold;
+  final TextAlign textAlignment;
+
+  TopicTextStyle copyWith({
+    double? textSize,
+    bool? isItalic,
+    bool? isBold,
+    TextAlign? textAlignment,
+  }) =>
+      TopicTextStyle(
+        textSize: textSize ?? this.textSize,
+        isItalic: isItalic ?? this.isItalic,
+        isBold: isBold ?? this.isBold,
+        textAlignment: textAlignment ?? this.textAlignment,
+      );
+}
+
+class TopicDecorationStyle {
+  const TopicDecorationStyle({
+    this.backgroundColor = Colors.yellow,
+    this.topPadding = 10,
+    this.bottomPadding = 10,
+    this.leftPadding = 10,
+    this.rightPadding = 10,
+  });
+
+  final Color backgroundColor;
+  final double topPadding;
+  final double bottomPadding;
+  final double leftPadding;
+  final double rightPadding;
+
+  TopicDecorationStyle copyWith({
+    Color? backgroundColor,
+    double? topPadding,
+    double? bottomPadding,
+    double? leftPadding,
+    double? rightPadding,
+  }) =>
+      TopicDecorationStyle(
+        backgroundColor: backgroundColor ?? this.backgroundColor,
+        topPadding: topPadding ?? this.topPadding,
+        bottomPadding: bottomPadding ?? this.bottomPadding,
+        leftPadding: leftPadding ?? this.leftPadding,
+        rightPadding: rightPadding ?? this.rightPadding,
+      );
 }
 
 typedef TopicPaintHandle = void Function(
@@ -155,39 +233,4 @@ enum TopicLayout {
 
     paintChildrenUseTreeH(context, offset, mainTopicRender, firstChild);
   }
-}
-
-class TopicStyle {
-  const TopicStyle({
-    this.backgroundColor = Colors.yellow,
-    this.textSize = 16,
-    this.topPadding = 10,
-    this.bottomPadding = 10,
-    this.leftPadding = 10,
-    this.rightPadding = 10,
-  });
-
-  final Color backgroundColor;
-  final double textSize;
-  final double topPadding;
-  final double bottomPadding;
-  final double leftPadding;
-  final double rightPadding;
-
-  TopicStyle copyWith({
-    Color? backgroundColor,
-    double? textSize,
-    double? topPadding,
-    double? bottomPadding,
-    double? leftPadding,
-    double? rightPadding,
-  }) =>
-      TopicStyle(
-        backgroundColor: backgroundColor ?? this.backgroundColor,
-        textSize: textSize ?? this.textSize,
-        topPadding: topPadding ?? this.topPadding,
-        bottomPadding: bottomPadding ?? this.bottomPadding,
-        leftPadding: leftPadding ?? this.leftPadding,
-        rightPadding: rightPadding ?? this.rightPadding,
-      );
 }

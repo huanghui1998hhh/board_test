@@ -54,6 +54,8 @@ class RenderSketckerStack extends RenderBox
 
       child = childParentData.nextSibling;
     }
+
+    controller.sketcherSize = firstChild!.size + const Offset(500, 500);
   }
 
   @override

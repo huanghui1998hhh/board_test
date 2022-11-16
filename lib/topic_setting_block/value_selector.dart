@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/single_child_widget.dart';
 
@@ -38,18 +39,21 @@ class _ValueSelectorState<T extends ChangeNotifier, S> extends SingleChildState<
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(refresh);
+      cache = null;
       widget.controller.addListener(refresh);
     }
   }
 
   void refresh() {
-    setState(() {});
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+    });
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final temp = widget.valueBuilder(context, widget.controller);
-    if (temp != value) {
+    if (temp != value || cache == null) {
       value = temp;
       cache = widget.builder(
         context,

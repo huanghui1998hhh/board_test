@@ -3,8 +3,6 @@ import 'package:board_test/sketcher/sketcher_unit/mind_map_contianer.dart';
 import 'package:board_test/sketcher/sketcher.dart';
 import 'package:board_test/sketcher/sketcher_controller.dart';
 import 'package:board_test/model/topic.dart';
-import 'package:board_test/topic_setting_block/double_setting_block.dart';
-import 'package:board_test/topic_setting_block/dropdown_button_setting_block.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -67,20 +65,20 @@ class _MainPageState extends State<MainPage> {
                   }
 
                   return ListView(
-                    children: [
-                      DoubleSettingBlock(
-                        value: selectedTopic.style.textSize,
-                        onChange: (value) {
-                          selectedTopic.style = selectedTopic.style.copyWith(textSize: value);
-                        },
-                      ),
-                      DropdownButtonSettingBlock(
-                        value: selectedTopic.layout,
-                        onChange: (value) {
-                          selectedTopic.layout = value;
-                        },
-                        values: TopicLayout.values,
-                      ),
+                    children: const [
+                      // DoubleSettingBlock(
+                      //   value: selectedTopic.style.textSize,
+                      //   onChange: (value) {
+                      //     selectedTopic.style = selectedTopic.style.copyWith(textSize: value);
+                      //   },
+                      // ),
+                      // DropdownButtonSettingBlock(
+                      //   value: selectedTopic.layout,
+                      //   onChange: (value) {
+                      //     selectedTopic.layout = value;
+                      //   },
+                      //   values: TopicLayout.values,
+                      // ),
                     ],
                   );
                 },
