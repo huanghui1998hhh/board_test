@@ -41,6 +41,13 @@ class RenderTransformViewport extends RenderProxyBox {
     _mindMap = value;
   }
 
+  Offset? startPoint;
+  Offset? endPoint;
+  Rect? get selectedRect {
+    if (startPoint == null || endPoint == null) return null;
+    return Rect.fromPoints(startPoint!, endPoint!);
+  }
+
   SketcherController _controller;
   SketcherController get controller => _controller;
   set controller(SketcherController value) {
@@ -114,6 +121,13 @@ class RenderTransformViewport extends RenderProxyBox {
       super.paint(context, offset + childOffset);
       layer = null;
     }
+
+    final tempRect = selectedRect;
+    if (tempRect == null) return;
+    context.canvas.drawRect(
+      tempRect,
+      Paint()..color = const Color.fromRGBO(180, 113, 234, 0.2),
+    );
   }
 
   void childOnTapHandle(RenderHoverIndicatable? onTappedRender) {
@@ -128,6 +142,21 @@ class RenderTransformViewport extends RenderProxyBox {
   void handleEvent(PointerEvent event, HitTestEntry entry) {
     if (event is PointerDownEvent) {
       childOnTapHandle(null);
+      for (var element in topics) {
+        element.isMultiSelected = false;
+      }
+      startPoint = event.position;
+    } else if (event is PointerMoveEvent) {
+      endPoint = event.position;
+      markNeedsPaint();
+      final tempRect = selectedRect!;
+      for (var element in topics) {
+        element.isMultiSelected = tempRect.overlaps(element.localToGlobal(Offset.zero) & element.size);
+      }
+    } else if (event is PointerUpEvent) {
+      startPoint = null;
+      endPoint = null;
+      markNeedsPaint();
     }
   }
 

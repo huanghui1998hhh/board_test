@@ -132,6 +132,17 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
     markNeedsLayout();
   }
 
+  bool _isMultiSelected = false;
+  bool get isMultiSelected => _isMultiSelected;
+  set isMultiSelected(bool value) {
+    if (_isMultiSelected == value) {
+      return;
+    }
+
+    _isMultiSelected = value;
+    markNeedsPaint();
+  }
+
   @override
   MouseCursor get cursor => _cursor;
   MouseCursor _cursor;
@@ -237,7 +248,7 @@ class RenderHoverIndicatable extends RenderProxyBox implements MouseTrackerAnnot
   void paintChild(PaintingContext context, Offset offset) {
     if (size > Size.zero) {
       Color? color;
-      if (isSelected) {
+      if (isSelected || _isMultiSelected) {
         color = const Color(0xFFFFB6C1);
       } else if (isHoverd) {
         color = const Color(0xFFFFB6C1).withOpacity(0.4);
