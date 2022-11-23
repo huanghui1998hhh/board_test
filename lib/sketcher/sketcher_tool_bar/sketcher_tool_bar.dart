@@ -1,4 +1,5 @@
 import 'package:board_test/model/mind_mapping.dart';
+import 'package:board_test/model/topic.dart';
 import 'package:board_test/sketcher/sketcher_tool_bar/icon_toogle.dart';
 import 'package:board_test/topic_setting_block/value_selector.dart';
 import 'package:flutter/material.dart';
@@ -36,10 +37,46 @@ class _SketcherToolBarState extends State<SketcherToolBar> {
               children: [
                 ValueSelector(
                   controller: selectedTopic,
-                  valueBuilder: (_, controller) => controller.style.topicTextStyle.isBold,
+                  valueBuilder: (_, controller) =>
+                      controller.style.topicTextStyle.textSize == TopicTextSize.values.first,
+                  builder: (_, value, __) => IconToogle.icon(
+                    disabled: value,
+                    onPressed: selectedTopic.textSizeReduce,
+                    icon: Icons.remove,
+                  ),
+                ),
+                ValueSelector(
+                  controller: selectedTopic,
+                  valueBuilder: (_, controller) => controller.style.topicTextStyle.textSize,
                   builder: (_, value, __) => IconToogle(
-                    buttonStyle: buttonStyle,
-                    value: value,
+                    onPressed: () {},
+                    child: Text(
+                      value.string,
+                      textScaleFactor: 1,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                ),
+                ValueSelector(
+                  controller: selectedTopic,
+                  valueBuilder: (_, controller) =>
+                      controller.style.topicTextStyle.textSize == TopicTextSize.values.last,
+                  builder: (_, value, __) => IconToogle.icon(
+                    disabled: value,
+                    onPressed: selectedTopic.textSizeIncrease,
+                    icon: Icons.add,
+                  ),
+                ),
+                VerticalDivider(
+                  indent: 4,
+                  endIndent: 4,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+                ValueSelector(
+                  controller: selectedTopic,
+                  valueBuilder: (_, controller) => controller.style.topicTextStyle.isBold,
+                  builder: (_, value, __) => IconToogle.icon(
+                    isSelected: value,
                     onSelected: (e) => selectedTopic.isBold = e,
                     icon: Icons.format_bold,
                   ),
@@ -52,9 +89,8 @@ class _SketcherToolBarState extends State<SketcherToolBar> {
                 ValueSelector(
                   controller: selectedTopic,
                   valueBuilder: (_, controller) => controller.style.topicTextStyle.isItalic,
-                  builder: (_, value, __) => IconToogle(
-                    buttonStyle: buttonStyle,
-                    value: value,
+                  builder: (_, value, __) => IconToogle.icon(
+                    isSelected: value,
                     onSelected: (e) => selectedTopic.isItalic = e,
                     icon: Icons.format_italic,
                   ),
@@ -67,9 +103,8 @@ class _SketcherToolBarState extends State<SketcherToolBar> {
                 ValueSelector(
                   controller: selectedTopic,
                   valueBuilder: (_, controller) => controller.style.topicTextStyle.textAlignment == TextAlign.left,
-                  builder: (_, value, __) => IconToogle(
-                    buttonStyle: buttonStyle,
-                    value: value,
+                  builder: (_, value, __) => IconToogle.icon(
+                    isSelected: value,
                     onSelected: (e) {
                       if (e) selectedTopic.textAlignment = TextAlign.left;
                     },
@@ -79,9 +114,8 @@ class _SketcherToolBarState extends State<SketcherToolBar> {
                 ValueSelector(
                   controller: selectedTopic,
                   valueBuilder: (_, controller) => controller.style.topicTextStyle.textAlignment == TextAlign.center,
-                  builder: (_, value, __) => IconToogle(
-                    buttonStyle: buttonStyle,
-                    value: value,
+                  builder: (_, value, __) => IconToogle.icon(
+                    isSelected: value,
                     onSelected: (e) {
                       if (e) selectedTopic.textAlignment = TextAlign.center;
                     },
@@ -91,15 +125,25 @@ class _SketcherToolBarState extends State<SketcherToolBar> {
                 ValueSelector(
                   controller: selectedTopic,
                   valueBuilder: (_, controller) => controller.style.topicTextStyle.textAlignment == TextAlign.right,
-                  builder: (_, value, __) => IconToogle(
-                    buttonStyle: buttonStyle,
-                    value: value,
+                  builder: (_, value, __) => IconToogle.icon(
+                    isSelected: value,
                     onSelected: (e) {
                       if (e) selectedTopic.textAlignment = TextAlign.right;
                     },
                     icon: Icons.format_align_right,
                   ),
                 ),
+                // VerticalDivider(
+                //   indent: 4,
+                //   endIndent: 4,
+                //   color: Colors.white.withOpacity(0.8),
+                // ),
+                // IconToogle.icon(
+                //   onPressed: () {
+                //     widget.mindMapping.selectedTopic = null;
+                //   },
+                //   icon: Icons.close,
+                // ),
               ],
             );
           },
@@ -107,25 +151,4 @@ class _SketcherToolBarState extends State<SketcherToolBar> {
       ),
     );
   }
-
-  late final buttonStyle = ButtonStyle(
-    overlayColor: MaterialStateProperty.all(Colors.transparent),
-    foregroundColor: MaterialStateProperty.all(Colors.white),
-    backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-      (Set<MaterialState> states) {
-        if (states.contains(MaterialState.selected)) {
-          return const Color.fromRGBO(156, 66, 228, 1);
-        } else if (states.contains(MaterialState.hovered)) {
-          return Colors.black.withOpacity(0.4);
-        }
-        return Colors.white.withOpacity(0.4);
-      },
-    ),
-    splashFactory: NoSplash.splashFactory,
-    fixedSize: MaterialStateProperty.all(const Size(30, 30)),
-    padding: MaterialStateProperty.all(EdgeInsets.zero),
-    shape: MaterialStateProperty.all(
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-    ),
-  );
 }

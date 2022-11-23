@@ -16,6 +16,21 @@ class Topic extends ChangeNotifier {
     }
   }
 
+  void textSizeIncrease() {
+    _textSize = style.topicTextStyle.textSize.next;
+  }
+
+  void textSizeReduce() {
+    _textSize = style.topicTextStyle.textSize.previous;
+  }
+
+  set _textSize(TopicTextSize value) {
+    if (value == style.topicTextStyle.textSize) return;
+
+    style.topicTextStyle = style.topicTextStyle.copyWith(textSize: value);
+    notifyListeners();
+  }
+
   set isItalic(bool value) {
     if (value == style.topicTextStyle.isItalic) return;
 
@@ -59,17 +74,38 @@ class Topic extends ChangeNotifier {
     notifyListeners();
   }
 
-  @override
-  void dispose() {
+  void remove() {
+    if (father == null) return;
+
     for (var element in children) {
       element.dispose();
     }
-    assert(father!.children.remove(this));
+    children = [];
+    final temp = father!.children.remove(this);
+    assert(temp);
     father!.children = father!.children.toList();
     father!.notifyListeners();
     father = null;
-    super.dispose();
+    dispose();
   }
+}
+
+enum TopicTextSize {
+  xs('XS', 8),
+  s('S', 12),
+  m('M', 16),
+  l('L', 20),
+  xl('XL', 24),
+  xxl('XXL', 28),
+  xxxl('3XL', 32),
+  xxxxl('4XL', 36);
+
+  final String string;
+  final double value;
+  const TopicTextSize(this.string, this.value);
+
+  get next => TopicTextSize.values[(index + 1).clamp(0, TopicTextSize.values.length - 1)];
+  get previous => TopicTextSize.values[(index - 1).clamp(0, TopicTextSize.values.length - 1)];
 }
 
 class TopicStyle {
@@ -79,19 +115,19 @@ class TopicStyle {
 
 class TopicTextStyle {
   const TopicTextStyle({
-    this.textSize = 16,
+    this.textSize = TopicTextSize.m,
     this.isBold = false,
     this.isItalic = false,
     this.textAlignment = TextAlign.center,
   });
 
-  final double textSize;
+  final TopicTextSize textSize;
   final bool isItalic;
   final bool isBold;
   final TextAlign textAlignment;
 
   TopicTextStyle copyWith({
-    double? textSize,
+    TopicTextSize? textSize,
     bool? isItalic,
     bool? isBold,
     TextAlign? textAlignment,
@@ -114,17 +150,17 @@ class TopicDecorationStyle {
   });
 
   final Color backgroundColor;
-  final double topPadding;
-  final double bottomPadding;
-  final double leftPadding;
-  final double rightPadding;
+  final int topPadding;
+  final int bottomPadding;
+  final int leftPadding;
+  final int rightPadding;
 
   TopicDecorationStyle copyWith({
     Color? backgroundColor,
-    double? topPadding,
-    double? bottomPadding,
-    double? leftPadding,
-    double? rightPadding,
+    int? topPadding,
+    int? bottomPadding,
+    int? leftPadding,
+    int? rightPadding,
   }) =>
       TopicDecorationStyle(
         backgroundColor: backgroundColor ?? this.backgroundColor,

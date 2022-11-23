@@ -15,8 +15,7 @@ class SketcherController extends ChangeNotifier {
 
   double get scale => computableScale / 100;
 
-  // ignore: prefer_const_constructors
-  Size _sketcherSize = Size(2000, 1000);
+  Size _sketcherSize = Size.zero;
   Size get sketcherSize => _sketcherSize;
   set sketcherSize(Size value) {
     if (_sketcherSize == value) {

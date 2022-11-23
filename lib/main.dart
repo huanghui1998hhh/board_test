@@ -48,9 +48,6 @@ class _MainPageState extends State<MainPage> {
             Expanded(
               child: Sketcher(
                 controller: controller,
-                onTapSpace: () {
-                  context.read<MindMapping>().selectedTopic = null;
-                },
                 child: MindMapContianer(topic: context.read<MindMapping>().mainTopic),
               ),
             ),

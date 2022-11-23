@@ -57,10 +57,10 @@ class _TopicBlockState extends State<TopicBlock> {
         builder: (_, value, child) {
           return Container(
             padding: EdgeInsets.fromLTRB(
-              value.leftPadding,
-              value.topPadding,
-              value.rightPadding,
-              value.bottomPadding,
+              value.leftPadding.toDouble(),
+              value.topPadding.toDouble(),
+              value.rightPadding.toDouble(),
+              value.bottomPadding.toDouble(),
             ),
             decoration: BoxDecoration(color: value.backgroundColor, borderRadius: BorderRadius.circular(5)),
             child: child,
@@ -83,7 +83,7 @@ class _TopicBlockState extends State<TopicBlock> {
                     textAlign: value.textAlignment,
                     focusNode: _focusNode,
                     style: TextStyle(
-                      fontSize: value.textSize,
+                      fontSize: value.textSize.value,
                       fontStyle: value.isItalic ? FontStyle.italic : FontStyle.normal,
                       fontWeight: value.isBold ? FontWeight.bold : FontWeight.normal,
                     ),
